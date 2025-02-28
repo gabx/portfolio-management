@@ -1,5 +1,6 @@
-# get_journal
+# write_journal
 # compute the portfolio PL by token 
+# https://enricoschumann.net/notes/
 
 library('PMwR')
 library('binancer')
