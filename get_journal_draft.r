@@ -22,7 +22,7 @@ binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET'))
 # heure de ref 6:00 PM
 # journal au 2024-12-16
 # time from Binance API is UTC
-with the binancer R package, apply the binance_mytrades function to each day from 2024-12-16 until 2025-02-22 for BTCUSDT element
+# with the binancer R package, apply the binance_mytrades function to each day from 2024-12-16 until 2025-02-22 for BTCUSDT element
 
 
 # heure de ref 6:00 PM
@@ -77,10 +77,12 @@ fetch_trades_for_day <- function(date) {
   binance_mytrades("BTCUSDT", start_time = as.character(as.Date(date)), end_time = as.character(as.Date(date + 1)))
 }
 # Fetch trades for each day using lapply
-trades_list <- lapply(date_range, fetch_trades_for_day)
+trades_list <- lapply(date_seq, fetch_trades_for_day)
 
 # Apply the function to each day using lapply
 daily_trades <- lapply(date_seq, get_trades_for_day)
+
+# daily_trades and trade_list are the same
 get.journal <- function(number_of_days) {
 
 
@@ -96,12 +98,12 @@ get.journal <- function(number_of_days) {
 
 # get a list of days to apply binance_all_orders()
 # no more than 24 hours between start and end time
-    trading.days <- seq(start.day, by = 'day', length.out = number_of_days)
+    # trading.days <- seq(start.day, by = 'day', length.out = number_of_days)
 
     my_trades <- function(x) {
-    Map(function(y,z) binance_all_orders(x, start_time = y, end_time = z), head(trading.days, -1), tail(trading.days, -1))
+    Map(function(y,z) binance_all_orders(x, start_time = y, end_time = z), head(date_seq, -1), tail(date_seq, -1))
 }
-    my.trades.full <- lapply(mlc$asset.usdt, function(x) my_trades(x))
+    my_trades_full <- lapply(mlc$asset.usdt, function(x) my_trades(x))
     non_empty_df <- function(l) {
     lapply(l, function(df) df[sapply(df, function(df) nrow(df) !=0)])
     # return(l)
