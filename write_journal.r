@@ -61,9 +61,13 @@ trade_list <- trade_list %>% mutate(price = cummulative_quote_qty / executed_qty
 # round price to 6 digits
 trade_list <- trade_list %>% mutate(price = round(price, 6))
 
+# make executed_qty negative when side is SELL
+trade_list_final <- trade_list %>%
+  mutate(executed_qty = ifelse(side == "SELL", -abs(executed_qty), executed_qty))
+
 # write the journal
-my_journal <- journal(timestamp = trade_list$time, instrument = trade_list$symbol,
-                       amount = trade_list$executed_qty, price = trade_list$price)
+my_journal <- journal(timestamp = trade_list_final$time, instrument = trade_list_final$symbol,
+                       amount = trade_list_final$executed_qty, price = trade_list_final$price)
 
 
 
