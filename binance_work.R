@@ -51,3 +51,12 @@ final_tb <- joined_tibble %>%
 
 my_journal_usd <- final_tb %>%
   rename(price = mul)
+
+# change instrument name in first column
+my_journal_usd[[1]] <- ifelse(my_journal_usd[[1]] == "AAVEBTC", "AAVEUSDT", my_journal_usd[[1]])
+my_journal_usd[[1]] <- ifelse(my_journal_usd[[1]] == "SUIBTC", "SUIUSDT", my_journal_usd[[1]])
+my_journal_usd[54, 1] <- 'BTCUSDT'
+my_journal_usd[39, 1] <- 'AAVEUSDT'
+# remove FTM
+my_journal_usd <- my_journal_usd %>% slice(-14)
+
