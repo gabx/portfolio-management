@@ -11,8 +11,11 @@ binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET'))
 tokens <- read.table('assets.csv')
 
 # journal au 16 dec
-my_journal_orig <- journal(timestamp = '2024-12-16', instrument = c('AAVE', 'BTC', 'ENA', 'USDT'),
-                      amount = c(835.68, 20.04765, 432616, 0.23190), price = c(387.87, 107078.55, 1.1853, 1))
+my_journal_orig <- tibble(
+  timestamp = rep(as.POSIXct('2024-12-16 00:00:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), 4), 
+  instrument = c('AAVEUSDT', 'BTCUSDT', 'ENAUSDT', 'USDT'),
+  amount = c(835.68, 20.04765, 432616, 0.23190), 
+  price = c(387.87, 107078.55, 1.1853, 1))
 
 # Define start and end dates in POSIXct format (UTC)
 start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
@@ -100,10 +103,15 @@ final_tb[39, 1] <- 'AAVEUSDT'
 # remove FTM
 final_tb <- final_tb %>% slice(-9)
 final_tb <- final_tb %>% slice(-13)
+# keep specific columns and rename them
+final_tb <- final_tb %>%
+  select(timestamp = time, instrument = symbol, amount = executed_qty, price = price)
+
+journal_tb <- rbind(my_journal_orig, final_tb)
 
 # write the journal
-my_journal <- journal(timestamp = final_tb$time, instrument = final_tb$symbol,
-                       amount = final_tb$executed_qty, price = final_tb$price)
+my_journal <- as.journal(journal_tb)
+
 
 
 

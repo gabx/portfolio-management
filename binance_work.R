@@ -1,4 +1,4 @@
-# modify the my_journal: move prices in BTC to USDT
+# modify the my_journal: move prices in BTC to USDT; remove FTM
 
 # return price for a pair at a specific timestamp
 get_binance_price <- function(pair, datetime) {
@@ -59,4 +59,6 @@ my_journal_usd[54, 1] <- 'BTCUSDT'
 my_journal_usd[39, 1] <- 'AAVEUSDT'
 # remove FTM
 my_journal_usd <- my_journal_usd %>% slice(-14)
+# change BTCUSDC to BTCUSDT on row 42
+my_journal_usd[42, 1] <- 'BTCUSDT'
 
