@@ -13,10 +13,10 @@ tokens <- read.table('assets.csv')
 
 # journal au 16 dec
 my_journal_orig <- tibble(
-  timestamp = rep(as.POSIXct('2024-12-16 00:00:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), 4), 
-  instrument = c('AAVEUSDT', 'BTCUSDT', 'ENAUSDT', 'USDT'),
-  amount = c(835.68, 20.04765, 432616, 0.23190), 
-  price = c(387.87, 107078.55, 1.1853, 1))
+  timestamp = rep(as.POSIXct('2024-12-16 00:00:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), 3), 
+  instrument = c('AAVEUSDT', 'BTCUSDT', 'ENAUSDT'),
+  amount = c(835.68, 20.04765, 432616), 
+  price = c(387.87, 107078.55, 1.1853))
 
 # Define start and end dates in POSIXct format (UTC)
 start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
