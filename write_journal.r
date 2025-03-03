@@ -52,15 +52,6 @@ trade_list_noempty <- Filter(function(df) nrow(df) > 0 && all(dim(df) > 0), trad
 # keep specific columns. We use dplyr
 daily_trades_filter <- lapply(trade_list_noempty, function(df) df %>% select(any_of(c('symbol', 
                        'executed_qty', 'cummulative_quote_qty', 'status', 'side', 'time'))))
-# remove CANCELED orders 
-# we need to keep canceled as they are partially field
-# daily_trades <- lapply(daily_trades_filter, function(df) {
-#   if("status" %in% names(df)) {
-#     df %>% dplyr::filter(status != "CANCELED")
-#   } else {
-#     df
-#   }
-# })
 # make one data.frame with all data.frame from the list
 trade_list <- data.table::rbindlist(daily_trades_filter, use.names = TRUE, fill = TRUE)
 # order by timestamp
