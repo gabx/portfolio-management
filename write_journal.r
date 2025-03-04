@@ -13,14 +13,14 @@ tokens <- read.table('assets.csv')
 
 # journal au 16 dec
 my_journal_orig <- tibble(
-  timestamp = rep(as.POSIXct('2024-12-16 00:00:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), 3), 
-  instrument = c('AAVEUSDT', 'BTCUSDT', 'ENAUSDT'),
+  timestamp = rep(as.POSIXct('2024-12-16 00:00:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), 4), 
+  instrument = c('USDT', 'SUIUSDT', 'AAVEUSDT', 'BTC' ),
   amount = c(835.68, 20.04765, 432616), 
   price = c(387.87, 107078.55, 1.1853))
 
 # Define start and end dates in POSIXct format (UTC)
 start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
-end_date   <- as.POSIXct("2025-02-17", tz = "UTC")
+end_date   <- as.POSIXct("2025-03-03", tz = "UTC")
 # Create a sequence of days between the specified dates
 date_seq <- seq(start_date, end_date, by = 'day')
 
@@ -84,8 +84,8 @@ dates <- c('2025-01-15 22:04:45', '2025-01-19 15:05:23', '2025-01-19 15:07:30', 
 # return BTC prices for specific dates
 btc_price_date <- sapply(dates, function(dt) get_binance_price("BTCUSDT", dt))
 
-btc_price <- as_tibble(c(rep(1, 20), 99623.99, rep(1, 3),104567.99, 104619.91, 106170.25, 100241.60, 100821.97, 
-                         101940.72, rep(1,9), 102814.36, rep(1,8),  105250.71, rep(1,5), 95469.28, 1, 1))
+btc_price <- as_tibble(c(rep(1, 22), 99623.99, rep(1, 3),104567.99, 104619.91, 106170.25, 100241.60, 100821.97, 
+                         101940.72, rep(1,9), 102814.36, rep(1,8),  105250.71, rep(1,5), 95469.28, rep(1,9)))
 
 # join the two tibbles
 joined_tibble <- bind_cols(trade_list_tb, btc_price)
@@ -97,9 +97,6 @@ final_tb <- joined_tibble %>%
 # rename mul column
 final_tb <- final_tb %>%
   rename(price = mul)
-# remove FTM
-final_tb <- final_tb %>% slice(-9)
-final_tb <- final_tb %>% slice(-14)
 # keep specific columns and rename them
 final_tb <- final_tb %>%
   select(timestamp = time, instrument = symbol, amount = executed_qty, price = price)
@@ -128,9 +125,12 @@ my_BTC <- tibble(
              -2.61438091, 0.64521457, 0.003020, -2.66999289), 
   price = c(95469, 105250, 102814, 101940, 100821, 100241, 106170, 104619, 104567, 99623))
 
-# change instrument name in first column
-journal_tb[[1]] <- ifelse(final_tb[[1]] == "AAVEBTC", "AAVEUSDT", final_tb[[1]])
-journal_tb[[1]] <- ifelse(final_tb[[1]] == "SUIBTC", "SUIUSDT", final_tb[[1]])
+# change instrument name in second column
+journal_tb <- final_tb %>%
+  mutate(instrument = ifelse(instrument == "AAVEBTC", "AAVEUSDT", instrument))
+journal_tb <- final_tb %>%
+  mutate(instrument = ifelse(instrument == "SUIBTC", "SUIUSDT", instrument))
+
 # join journal_tb with my_BTC
 my_journal_tb <- bind_rows(journal_tb, my_BTC)
 # order by timestamp
@@ -141,5 +141,22 @@ my_journal_tb <- my_journal_tb  %>% arrange(timestamp)
 my_journal <- as.journal(my_journal_tb)
 
 
+# Print the journal in nice formats
+# library(kableExtra)
+my_journal_org <- knitr::kable(my_journal, format = "org")
+# write the journal to a file in md format
+my_journal_md <- knitr::kable(my_journal, format = "markdown", caption = 'Trading journal')
+writeLines(my_journal_md, "journal.md")
 
+my_journal_html <- knitr::kable(my_journal, format = "html", caption = 'Trading journal')
+writeLines(my_journal_html, "journal.html")
+# https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
+my_journal %>%
+  kbl() %>%
+  kable_styling()
+my_journal %>%
+  kbl() %>%
+  kable_classic_2(full_width = F, html_font = 'Inconsolata')
 
+my_journal_rst <- knitr::kable(my_journal, format = "rst", caption = 'Trading journal')
+writeLines(my_journal_rst, 'journal.rst')
