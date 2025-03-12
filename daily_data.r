@@ -1,4 +1,4 @@
-## Create a data frame with positions, token daily closes, PL, BTC as benchmark ##
+## Create a data frame with daily close of portfolio tokens ##
 
 library('PMwR')
 library('binancer')
@@ -21,24 +21,27 @@ tokens_usdt <- tokens_usdt %>%
 # make a list
 tokens_usdt_ls <- as.list(tokens_usdt)
 
-# Define start and end dates in POSIXct format (UTC)
-start_date <- as.POSIXct("2024-12-17", tz = 'UTC') 
-end_date   <- as.POSIXct("2025-03-12", tz = "UTC")
-date_seq <- seq(start_date, end_date, by = "day")
+# Define start date in POSIXct format (UTC)
+start_date <- as.POSIXct("2024-12-16", tz = 'UTC') 
+# end_date   <- as.POSIXct("2025-03-12", tz = "UTC")
+# date_seq <- seq(start_date, end_date, by = "day")
 
 # get daily close for our token
 # !! pour l'écriture du code !!
 # sel_tok <- token_usdt[1:2, ]
-
-get_price <- function(my_token, start_date, end_date) {
-  klines <- binance_klines(my_token, interval = '1h', start_time = as.Date(start_date))
+# interval at 6h allows to stay in the limit of 500 values
+get_price <- function(my_token, start_date) {
+  klines <- binance_klines(my_token, interval = '6h', start_time = as.Date(start_date))
 }
-daily_prices <- map(tokens_usdt_ls$V1, ~ get_price(.x, start_date = start_date, end_date = end_date))
+
+# !! results are limited to 500 values
+
+daily_prices <- map(tokens_usdt_ls$V1, ~ get_price(.x, start_date = start_date))
                                         
-# keep close at 6:00 each day
+# keep close at 7:00 each day
 keep_close <- function(df) {
   df %>%
-    filter(format(open_time, "%H:%M:%S") == "06:00:00") %>%
+    filter(format(open_time, "%H:%M:%S") == "07:00:00") %>%
     select(open_time, close)
 }
 
@@ -52,29 +55,3 @@ colnames(df_combined)[-1] <- tokens_usdt_ls$V1
 
 
 
-
-# daily_prices <- map_dfr(date_seq, ~ get_price(c('BTCUSDT', 'SUIUSDT'), .x))
-# remove duplicates
-# daily_prices_unique <- token_daily %>%
-#   distinct(open_time, .keep_all = TRUE)
-# daily_prices_unique <- map(token_daily, ~ distinct(.x, open_time, .keep_all = TRUE))
-# keep price @ 06:00 each day
-daily_prices_close <- daily_prices_unique %>%
-  filter(format(open_time, "%H:%M:%S") == "06:00:00") %>%
-  select(open_time, close)  # Keep only relevant columns
-
-# Define processing function
-process_df <- function(df) {
-  df %>%
-    distinct(open_time, .keep_all = TRUE) %>%  # Remove duplicates
-    mutate(close_adjusted = close * 1.01)      # Example: Adjust price
-}
-
-
-
-res_close <- res_unique %>%
-  filter(format(open_time, "%H:%M:%S") == "06:00:00") %>%
-  select(open_time, close)
-result_unique <- results %>%
-  distinct(open_time, .keep_all = TRUE)
-df_list_cleaned <- map(results, ~ distinct(.x, open_time, .keep_all = TRUE))
