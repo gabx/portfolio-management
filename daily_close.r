@@ -10,7 +10,7 @@ library(PerformanceAnalytics)
 
 
 binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
-tokens <- read.table('assets.csv')
+tokens <- read.table('assets.csv') # !! no SUSDT price before 01-16
 
 # replace BTC with USDT at the end of the token names
 tokens_usdt <- tokens%>%
@@ -35,13 +35,13 @@ daily_prices <- map_dfr(date_seq, ~ get_price('BTCUSDT', .x))
 
 # daily_prices <- daily_prices %>%
 #   mutate(open_time = as.POSIXct(open_time, format="%Y-%m-%d %H:%M:%S", tz="UTC"))
-# remove duplicates
-daily_prices_unique <- daily_prices_close %>%
-  distinct(open_time, .keep_all = TRUE)
 # keep price @ 06:00 each day
 daily_prices_close <- daily_prices_unique %>%
   filter(format(open_time, "%H:%M:%S") == "06:00:00") %>%
   select(open_time, close)  # Keep only relevant columns
+# remove duplicates
+daily_prices_unique <- daily_prices_close %>%
+  distinct(open_time, .keep_all = TRUE)
 
 ## to work with PerformanceAnalytics ##
 # change tibble to a time serie object
