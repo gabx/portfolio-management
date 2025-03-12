@@ -48,6 +48,8 @@ keep_close <- function(df) {
 
 # this is the final list with daily closes for each token on the period
 df_list_close <- lapply(daily_prices, keep_close)
+# transform to a list of tibbles
+df_list_close <- map(df_list_close, as_tibble)
 # combine data frames of the list in one df by the common column, open_time
 df_combined <- reduce(df_list_close, full_join, by = "open_time")
 # name columns
