@@ -7,6 +7,8 @@ library('binancer')
 library('rjson')
 library('dplyr')
 
+# prevent scientific notation for numbers 8.8214000e+02
+options(scipen = 999, digits = 8)
 
 binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
 tokens <- read.table('assets.csv')
