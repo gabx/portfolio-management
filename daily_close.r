@@ -10,7 +10,7 @@ library(PerformanceAnalytics)
 
 
 binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
-tokens <- read.table('assets.csv') # !! no SUSDT price before 01-16
+tokens <- read.table('assets.csv') # !! no SUSDT price before 01-16. Removed from csv
 
 # replace BTC with USDT at the end of the token names
 tokens_usdt <- tokens%>%
