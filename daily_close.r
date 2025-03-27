@@ -42,18 +42,8 @@ token_daily_close <- token_usdt %>%
   filter(format(close_time, "%H:%M:%S") == "18:59:59") %>%
   select(token, close_time, close)
 # put token names as column names
-price_wide <- token_daily_close %>%
-  select(close_time, token, close) %>%   # on garde uniquement les colonnes utiles
+token_daily_close <- token_daily_close %>%
   pivot_wider(names_from = token, values_from = close)
 
 
-# remove duplicates
-daily_prices_unique <- daily_prices_close %>%
-  distinct(open_time, .keep_all = TRUE)
 
-##############################################
-## to work with PerformanceAnalytics ##
-# change tibble to a time serie object
-daily_prices_close_xts <- xts(daily_prices_close %>% select(-open_time), order.by = daily_prices_close$open_time)
-# compute returns
-Return.calculate(daily_prices_close_xts, method = 'discrete')
