@@ -29,14 +29,14 @@ trade_list2 <- trade_list2 %>% mutate(price = round(price, 6))
 trade_list_final2 <- trade_list2 %>%
   mutate(executed_qty = ifelse(side == "SELL", -abs(executed_qty), executed_qty))
 trade_list_tb2 <- as_tibble(trade_list_final2)
-trade_list_tb2 <- trade_list_tb2 %>%
+trade_tb2 <- trade_list_tb2 %>%
   filter(if_all(everything(), ~ !is.nan(.)))
 
 
-###### Join the two periods
-trade_list_final <- bind_rows(trade_list_tb_orig, trade_list_tb1, trade_list_tb2)
+###### Join the two periods and portfolio at day 1
+trade_final <- bind_rows(trade_tb_start, trade_tb1, trade_tb2)
 # order by timestamp
-trade_list_final  <- trade_list_final  %>% arrange(time)
+trade_final  <- trade_final  %>% arrange(time)
 
 
 ###############################################################################
