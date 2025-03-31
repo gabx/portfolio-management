@@ -16,7 +16,7 @@ token_list <- as.list(token$V1)
 # journal au 16 dec
 trade_tb_start <- tibble(
   time = rep(as.POSIXct('2024-12-16 18:00:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), 6), 
-  symbol = c('FTMUSDT', 'SUIUSDT', 'ETHUSDT', 'ENAUSDT', 'BTCUSDT', 'AAVEUSDT' ),
+  symbol = c('FTMUSDC', 'SUIUSDC', 'ETHUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC' ),
   executed_qty = c(284270, 80024, 91.8981, 207836, 9.3372107, 1152.058), 
   price = c(1.382, 4.7256, 4038, 1.1855, 107012, 386.55),
   status = rep('FILLED', 6),
