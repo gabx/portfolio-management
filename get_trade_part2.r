@@ -36,9 +36,9 @@ mutate(symbol = sub("(USDT|BTC)$", "USDC", symbol))
 
 
 ###### Join the two periods and portfolio at day 1
-trade_final <- bind_rows(trade_tb_start, trade_tb1, trade_tb2)
+all_trade <- bind_rows(trade_tb_start, trade_tb1, trade_tb2)
 # order by timestamp
-trade_final  <- trade_final  %>% arrange(time)
+all_trade  <- all_trade %>% arrange(time)
 
 
 ###############################################################################
