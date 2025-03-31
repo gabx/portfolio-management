@@ -1,10 +1,13 @@
-# write_journal
+# write journal with all trades
 # https://enricoschumann.net/notes/
+
+# we want finally all paires against USDC, replacing USDT and BTC
 
 library('PMwR')
 library('binancer')
 library('rjson')
 library('dplyr')
+library(stringr)
 
 # prevent scientific notation for numbers 8.8214000e+02
 options(scipen = 999, digits = 8)
@@ -80,16 +83,130 @@ trade_list_tb2 <- trade_list_tb2 %>%
 
 
 ###### Join the two periods
-trade_list_all <- bind_rows(trade_list_tb_orig, trade_list_tb, trade_list_tb2)
+all_trade <- bind_rows(trade_list_tb_orig, trade_list_tb, trade_list_tb2)
 # order by timestamp
-trade_list_all  <- trade_list_final  %>% arrange(time)
+all_trade  <- trade_list_final  %>% arrange(time)
 
 
 ###############################################################################
 
 ##############################  TO DO   #######################################
-# we need here to retrieve BTC value for token/BTC before we replace BTC
-# Filtrer les lignes o� `column_name` se termine par "BTC" et extraire `value_column`
+# Retrieve BTC value for token/BTC before we replace BTC by USDC
+
+# date for rows with pair token/BTC
+btc_time_ls <- all_trade %>%
+  filter(str_detect(symbol, "BTC$")) %>%
+  pull(time) 
+# as tibble
+btc_time_tb <- as_tibble(btc_time_ls)
+
+# function to retrieve BTC price @ specific time.
+# round_date round to the nearest unit
+get_btc_price <- function(my_time) {
+  kline <- binance_klines("BTCUSDT", interval = '1m', start_time = round_date
+          (as.POSIXct(my_time, tz = 'UTC') - 3600, unit = 'minute'), end_time = as.POSIXct(my_time, tz = 'UTC') + 60)
+}  
+# apply the function to our dates
+btc_with_price <- btc_time_tb %>%
+  mutate(kline = map(value, get_btc_price))
+# unnest to get the full table
+btc_with_price <- btc_with_price %>%
+  unnest(kline)
+# keep only first line for every date, open_time and open columns, rename them
+btc_value <- btc_with_price %>%
+  group_by(value) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(open_time, open) %>%
+  rename_with(~c('time', 'btc_price'))
+
+
+# we add BTC price for lines with paires against BTC
+# Extraire les lignes concern�es par les symboles en BTC
+btc_trade_rows <- which(str_detect(all_trade$symbol, "BTC$"))
+# Créer un vecteur de la même taille que all_trade avec que des NA
+btc_ref_price_col <- rep(NA_real_, nrow(all_trade))
+# Injecter les prix dans les lignes correspondant aux symboles BTC
+btc_ref_price_col[btc_trade_rows] <- btc_value$btc_price[seq_along(btc_trade_rows)]
+# Ajouter la colonne à la tibble
+all_trade <- all_trade %>%
+  mutate(btc_price = btc_ref_price_col)
+all_trade <- all_trade %>%
+  select(-btc_reference_price)
+# replace btc price by USDT
+all_trade_no_btc <- all_trade %>%
+  mutate(
+    cummulative_quote_qty = if_else(
+      !is.na(btc_price),
+      executed_qty * price * btc_price,
+      cummulative_quote_qty
+    )
+  )
+# replace USDC by USDT
+# TIP: BTC$ & USDC$ ensures only elements ending with "BTC" or 'USDC' are modified.
+all_trade_no_btc <- all_trade_no_btc %>%
+  mutate(symbol = str_replace(symbol, "BTC$", "USDC"))
+# remove uneeded columns
+all_trade_final <- all_trade_no_btc %>%
+  select(-status, -side, -btc_price)
+
+
+
+
+
+
+
+
+ #################################################### 
+  
+# btc_value_extended <- btc_value %>%
+#   mutate(
+#     symbol = NA_character_,
+#     executed_qty = NA_real_,
+#     price = NA_real_,
+#     status = NA_character_,
+#     side = NA_character_,
+#     cummulative_quote_qty = NA_real_
+#   ) %>%
+#   select(names(all_trade), btc_price)  # réorganiser les colonnes dans le bon ordre
+# # Ajouter btc_value � la fin de all_trade
+# combined <- bind_rows(all_trade, btc_value_extended)
+# # on trie par date
+# combined_sorted <- combined %>%
+#   arrange(time)
+
+####################################################
+# return BTC price @ 18:59:59
+get_btc_price <- function(my_time) {
+  klines <- binance_klines("BTCUSDT", interval = '1m', start_time = as.POSIXct(my_time, tz = 'UTC'),
+                           end_time = as.POSIXct(my_time, tz = 'UTC') + 60)
+}
+
+# Horodatage réel en UTC
+my_time <- as.POSIXct("2025-01-15 21:04:45", tz = "UTC") 
+# round à la minute la plus proche
+round_time <- round_date(my_time, unit = "minute")
+
+# Fetch la bougie de 1 minute correspondante
+price_data <- binance_klines(
+  symbol = "BTCUSDT",
+  interval = "1m",
+  start_time = floored_time,
+  end_time = floored_time + 60  # 60 secondes = 1 minute
+)
+
+print(price_data)
+
+
+
+1 2025-01-15 21:04:45
+2 2025-01-19 14:05:23
+3 2025-01-19 14:07:30
+4 2025-01-19 19:36:24
+
+
+
+
 
 # example
 symbol <- c("BTCUSDT", "BTCUSDT", "ETHUBTC", "AAVEBTC", "ENAUSDT")
@@ -101,13 +218,10 @@ get_btc_price <- function(my_time) {
 }
 
 
-# date for rows with pair token/BTC
-time_ls <- trade_list_final %>%
-  filter(str_detect(symbol, "BTC$")) %>%
-  pull(time)  # Remplace `value_column` par la colonne � r�cup�rer
 
 
-df <- trade_list_final %>%
+
+df <- all_trade %>%
   mutate(
     BTCUSDT_price = ifelse(str_detect(symbol, "BTC$"), map_dbl(time, get_btc_price), NA_real_)
   )
@@ -127,12 +241,22 @@ get_price <- function(my_token, my_time) {
   klines <- binance_klines(my_token, interval = '1h', start_time = as.Date(my_time), end_time = as.Date(my_time) + 1)
 }
 
-get_btc_price <- function(my_time) {
-  klines <- binance_klines("BTCUSDT", interval = '1h', start_time = as.Date(my_time), end_time = as.Date(my_time) + 1)
-  return(as.numeric(klines$close[[18]]))
-}
 
 
+###################################
+# mettre les token en nom de columns, en dessous les cummulative_quote_qty par token et date
+df2_wide <- df2 %>%
+  select(time, symbol, cummulative_quote_qty) %>%
+  pivot_wider(
+    names_from = symbol,
+    values_from = cummulative_quote_qty
+  )
+
+time	SUIUSDC	SUSDC	BTCUSDC
+2025-03-05 14:38:47	250010	NA	NA
+2025-03-05 20:54:02	250000	NA	NA
+2025-03-06 17:50:47	NA	175826	NA
+#####################################
 # fetch btcusdt price
 # Function to get btc  price at 18:00 
 
