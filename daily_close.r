@@ -18,14 +18,14 @@ start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
 end_date   <- as.POSIXct(today(), tz = 'UTC')
 
 ## portfolio token as a tibble ##
-# replace BTC with USDT at the end of the token names
-token_usdt <- token %>%
-  mutate(V1 = sub("BTC$|USDC", "USDT", V1))
+# replace BTC with USDC at the end of the token names
+token_usdc <- token %>%
+  mutate(V1 = sub("BTC$", "USDC", V1))
 # remove duplicate
-token_usdt <- token_usdt %>%
+token_usdc <- token_usdc %>%
   distinct()
 # transform to a tibble
-token_usdt <- as_tibble(token_usdt)
+token_usdc <- as_tibble(token_usdc)
 
 # function to get prices
 get_price <- function(my_token, start_date) {
@@ -34,7 +34,7 @@ get_price <- function(my_token, start_date) {
 
 
 # Fetch data for each date/token @18:59:59 and return in a tibble
-token_daily_close <- token_usdt %>%
+token_daily_close <- token_usdc %>%
   mutate(data = map(V1, ~ get_price(.x, start_date))) %>%
   mutate(token = V1) %>%
   select(-V1) %>%
