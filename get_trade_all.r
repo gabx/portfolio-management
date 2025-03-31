@@ -50,6 +50,9 @@ trade_list <- trade_list %>% mutate(price = round(price, 6))
 # make executed_qty negative when side is SELL
 trade_list_final <- trade_list %>%
   mutate(executed_qty = ifelse(side == "SELL", -abs(executed_qty), executed_qty))
+# make cumulative_quote_qty negative when side is SELL
+trade_list_final <- trade_list_final %>%
+  mutate(cummulative_quote_qty = ifelse(side == "SELL", -abs(cummulative_quote_qty), cummulative_quote_qty))
 # transform into a tibble
 trade_list_tb <- as_tibble(trade_list_final)
 # Remove rows where any column has NaN
@@ -69,15 +72,17 @@ trade_list2 <- trade_list2 %>% mutate(price = cummulative_quote_qty / executed_q
 trade_list2 <- trade_list2 %>% mutate(price = round(price, 6))
 trade_list_final2 <- trade_list2 %>%
   mutate(executed_qty = ifelse(side == "SELL", -abs(executed_qty), executed_qty))
+trade_list_final2 <- trade_list_final2 %>%
+  mutate(cummulative_quote_qty = ifelse(side == "SELL", -abs(cummulative_quote_qty), cummulative_quote_qty))
 trade_list_tb2 <- as_tibble(trade_list_final2)
 trade_list_tb2 <- trade_list_tb2 %>%
   filter(if_all(everything(), ~ !is.nan(.)))
 
 
 ###### Join the two periods
-trade_list_final <- bind_rows(trade_list_tb_orig, trade_list_tb, trade_list_tb2)
+trade_list_all <- bind_rows(trade_list_tb_orig, trade_list_tb, trade_list_tb2)
 # order by timestamp
-trade_list_final  <- trade_list_final  %>% arrange(time)
+trade_list_all  <- trade_list_final  %>% arrange(time)
 
 
 ###############################################################################

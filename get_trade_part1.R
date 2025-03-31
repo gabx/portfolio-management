@@ -51,6 +51,9 @@ trade_list <- trade_list %>% mutate(price = round(price, 6))
 # make executed_qty negative when side is SELL
 trade_list_final <- trade_list %>%
   mutate(executed_qty = ifelse(side == "SELL", -abs(executed_qty), executed_qty))
+# make cumulative_quote_qty negative when side is SELL
+trade_list_final <- trade_list_final %>%
+  mutate(cummulative_quote_qty = ifelse(side == "SELL", -abs(cummulative_quote_qty), cummulative_quote_qty))
 # transform into a tibble
 trade_list_tb <- as_tibble(trade_list_final)
 # Remove rows where any column has NaN
