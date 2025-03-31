@@ -39,7 +39,7 @@ trade_ls <- mapply(binance_all_orders, start_time = start_date, symbol = token_l
 trade_ls_noempty <- Filter(function(df) nrow(df) > 0 && all(dim(df) > 0), trade_ls)
 # keep specific columns. We use dplyr
 trade_list_filter <- lapply(trade_ls_noempty, function(df) df %>% select(any_of(c('symbol', 
-                                                                                  'executed_qty', 'cummulative_quote_qty', 'status', 'side', 'time'))))
+                    'executed_qty', 'cummulative_quote_qty', 'status', 'side', 'time'))))
 # make one data.frame with all data.frame from the list
 trade_list <- data.table::rbindlist(trade_list_filter, use.names = TRUE, fill = TRUE)
 # order by timestamp
@@ -53,7 +53,8 @@ trade_list_final <- trade_list %>%
   mutate(executed_qty = ifelse(side == "SELL", -abs(executed_qty), executed_qty))
 # make cumulative_quote_qty negative when side is SELL
 trade_list_final <- trade_list_final %>%
-  mutate(cummulative_quote_qty = ifelse(side == "SELL", -abs(cummulative_quote_qty), cummulative_quote_qty))
+  mutate(cummulative_quote_qty = ifelse(side == "SELL", -abs(cummulative_quote_qty), 
+                                        cummulative_quote_qty))
 # transform into a tibble
 trade_list_tb <- as_tibble(trade_list_final)
 # Remove rows where any column has NaN
