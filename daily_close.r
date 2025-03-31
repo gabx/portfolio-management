@@ -32,7 +32,6 @@ get_price <- function(my_token, start_date) {
   klines <- binance_klines(my_token, interval = '6h', start_time = as.Date(start_date))
 }
 
-
 # Fetch data for each date/token @18:59:59 and return in a tibble
 token_daily_close <- token_usdc %>%
   mutate(data = map(V1, ~ get_price(.x, start_date))) %>%
