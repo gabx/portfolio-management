@@ -31,6 +31,8 @@ trade_list_final2 <- trade_list2 %>%
 trade_list_tb2 <- as_tibble(trade_list_final2)
 trade_tb2 <- trade_list_tb2 %>%
   filter(if_all(everything(), ~ !is.nan(.)))
+trade_tb2 <- trade_tb2 %>%
+mutate(symbol = sub("(USDT|BTC)$", "USDC", symbol))
 
 
 ###### Join the two periods and portfolio at day 1

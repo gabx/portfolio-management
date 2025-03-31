@@ -56,3 +56,6 @@ trade_list_tb <- as_tibble(trade_list_final)
 # Remove rows where any column has NaN
 trade_tb1 <- trade_list_tb %>%
   filter(if_all(everything(), ~ !is.nan(.)))
+# replace USDT with USDC
+trade_tb1 <- trade_tb1 %>%
+  mutate(symbol = sub("USDT$", "USDC", symbol))
