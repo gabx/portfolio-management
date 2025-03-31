@@ -28,11 +28,13 @@ trade_list2 <- trade_list2 %>% mutate(price = cummulative_quote_qty / executed_q
 trade_list2 <- trade_list2 %>% mutate(price = round(price, 6))
 trade_list_final2 <- trade_list2 %>%
   mutate(executed_qty = ifelse(side == "SELL", -abs(executed_qty), executed_qty))
+trade_list_final2 <- trade_list_final2 %>%
+  mutate(cummulative_quote_qty = ifelse(side == "SELL", -abs(cummulative_quote_qty), cummulative_quote_qty))
 trade_list_tb2 <- as_tibble(trade_list_final2)
 trade_tb2 <- trade_list_tb2 %>%
   filter(if_all(everything(), ~ !is.nan(.)))
 trade_tb2 <- trade_tb2 %>%
-mutate(symbol = sub("(USDT|BTC)$", "USDC", symbol))
+mutate(symbol = sub("USDT$", "USDC", symbol))
 
 
 ###### Join the two periods and portfolio at day 1
