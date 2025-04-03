@@ -20,13 +20,14 @@ binance_credentials(Sys.getenv('BINANCE_KEY2'), Sys.getenv('BINANCE_SECRET2'))
 start_date2 <- as.POSIXct("2025-01-04", tz = 'UTC')
 trade_ls2 <- mapply(binance_all_orders, start_time = start_date2, symbol = token_list, SIMPLIFY = FALSE)
 trade_ls_noempty2 <- Filter(function(df) nrow(df) > 0 && all(dim(df) > 0), trade_ls2)
-trade_list_filter2 <- lapply(trade_ls_noempty2, function(df) df %>% select(any_of(c('symbol', 
+trade_list_filter2 <- lapply(trade_ls_noempty2, function(df) df %>% select(any_of(c('symbol', 'order_id'
                       'executed_qty', 'cummulative_quote_qty', 'status', 'side', 'time'))))
 trade_list2 <- data.table::rbindlist(trade_list_filter2, use.names = TRUE, fill = TRUE)
-trade_list2  <- trade_list2  %>% arrange(time)
-trade_list2 <- trade_list2 %>% mutate(price = cummulative_quote_qty / executed_qty )
-trade_list2 <- trade_list2 %>% mutate(price = round(price, 6))
-trade_list_final2 <- trade_list2 %>%
+trade_list_unique2 <- trade_list2[!duplicated(order_id)]
+trade_list_unique2  <- trade_list_unique2  %>% arrange(time)
+trade_list_unique2 <- trade_list_unique2 %>% mutate(price = cummulative_quote_qty / executed_qty )
+trade_list_unique2 <- trade_list_unique2 %>% mutate(price = round(price, 6))
+trade_list_final2 <- trade_list_unique2%>%
   mutate(executed_qty = ifelse(side == "SELL", -abs(executed_qty), executed_qty))
 trade_list_final2 <- trade_list_final2 %>%
   mutate(cummulative_quote_qty = ifelse(side == "SELL", -abs(cummulative_quote_qty), cummulative_quote_qty))
