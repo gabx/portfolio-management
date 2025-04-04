@@ -76,6 +76,66 @@ trade_list_tb <- trade_list_tb %>%
 # add day 1 portfolio
 all_trade <- bind_rows(trade_tb_start, trade_list_tb)
 
+################ ALL PAIRS AGAINST USDC ################
+
+# date for rows with pair token/BTC
+btc_time_ls <- all_trade %>%
+  filter(str_detect(symbol, "BTC$")) %>%
+  pull(time) 
+# as tibble
+btc_time_tb <- as_tibble(btc_time_ls)
+
+# function to retrieve BTC price @ specific time.
+# round_date round to the nearest unit
+get_btc_price <- function(my_time) {
+  kline <- binance_klines("BTCUSDT", interval = '1m', start_time = round_date
+                          (as.POSIXct(my_time, tz = 'UTC') - 3600, unit = 'minute'), end_time = as.POSIXct(my_time, tz = 'UTC') + 60)
+}  
+# apply the function to our dates
+btc_with_price <- btc_time_tb %>%
+  mutate(kline = map(value, get_btc_price))
+# unnest to get the full table
+btc_with_price <- btc_with_price %>%
+  unnest(kline)
+# keep only first line for every date, open_time and open columns, rename them
+btc_value <- btc_with_price %>%
+  group_by(value) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(open_time, open) %>%
+  rename_with(~c('time', 'btc_price'))
+
+
+# we add BTC price for lines with paires against BTC
+# Extraire les lignes concern�es par les symboles en BTC
+btc_trade_rows <- which(str_detect(all_trade$symbol, "BTC$"))
+# Créer un vecteur de la même taille que all_trade avec que des NA
+btc_ref_price_col <- rep(NA_real_, nrow(all_trade))
+# Injecter les prix dans les lignes correspondant aux symboles BTC
+btc_ref_price_col[btc_trade_rows] <- btc_value$btc_price[seq_along(btc_trade_rows)]
+# Ajouter la colonne à la tibble
+all_trade <- all_trade %>%
+  mutate(btc_price = btc_ref_price_col)
+#all_trade <- all_trade %>%
+  #select(-btc_reference_price)
+# replace btc price by USDT
+all_trade_no_btc <- all_trade %>%
+  mutate(
+    cummulative_quote_qty = if_else(
+      !is.na(btc_price),
+      executed_qty * price * btc_price,
+      cummulative_quote_qty
+    )
+  )
+# replace BTC by USDC
+# TIP: BTC$ & USDC$ ensures only elements ending with "BTC" or 'USDC' are modified.
+all_trade_no_btc <- all_trade_no_btc %>%
+  mutate(symbol = str_replace(symbol, "BTC$|USDT", "USDC"))
+# remove uneeded columns
+# here is our final trade table with all pairs and prices in USDC
+all_trade_final <- all_trade_no_btc %>%
+  select(-status, -side, -btc_price, -order_id)
+
 
 
 
