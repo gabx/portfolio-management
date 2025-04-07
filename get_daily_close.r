@@ -15,12 +15,12 @@ token <- read.table('assets.csv') # !! no SUSDT price before 01-16. Removed from
 
 # Define start and end dates in POSIXct format (UTC)
 start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
-end_date   <- as.POSIXct(today(), tz = 'UTC')
+# end_date   <- as.POSIXct(today(), tz = 'UTC')
 
 ## portfolio token as a tibble ##
-# replace BTC with USDC at the end of the token names
+# replace BTC & USDT with USDC at the end of the token names
 token_usdc <- token %>%
-  mutate(V1 = sub("BTC$", "USDC", V1))
+  mutate(V1 = sub("BTC$|USDT$", "USDC", V1))
 # remove duplicate
 token_usdc <- token_usdc %>%
   distinct()
@@ -29,13 +29,13 @@ token_usdc <- unnest(token_usdc, cols = V1)
 
 # function to get prices
 get_price <- function(my_token, start_date) {
-  klines <- binance_klines(my_token, interval = '6h', start_time = as.Date(start_date))
+  klines <- binance_klines(my_token, interval = '6h', start_time = start_date)
 }
 
 # Fetch data for each date/token @18:59:59 and return in a tibble
 token_daily_close <- token_usdc %>%
   mutate(data = map(V1, ~ get_price(.x, start_date))) %>%
-  mutate(token = V1) %>%
+  mutate(token = V1) %>% 
   select(-V1) %>%
   unnest(data) %>%
   filter(format(close_time, "%H:%M:%S") == "18:59:59") %>%
