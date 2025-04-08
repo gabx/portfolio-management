@@ -49,9 +49,9 @@ token_daily_close <- token_usdc %>%
 # put token names as column names
 token_daily_close <- token_daily_close %>%
   pivot_wider(names_from = token, values_from = close) 
-# add USDC column
-token_daily_close <- token_daily_close %>%
-  mutate(USDC = 1)
+# # add USDC column
+# token_daily_close <- token_daily_close %>%
+#   mutate(USDC = 1)
  
 token_daily_close <- token_daily_close %>%
   rename_with(~ paste0(.x, "_price"), .cols = -close_time)
