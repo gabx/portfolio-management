@@ -15,7 +15,16 @@ library(lubridate)
 # token_daily_close <- token_daily_close %>%
 #   rename_with(~ paste0(.x, "_close"), .cols = -time)
 
-# first solution
+# add rows with TOKEN_position
+token_usdc <- token %>%
+       mutate(V1 = sub("BTC$|USDT$", "USDC", V1))
+token_usdc <- token_usdc %>%
+       distinct()
+token_usdc <- unnest(token_usdc, cols = V1)
+empty_position<- tibble::tibble(!!!setNames(rep(list(logical()), nrow(token_usdc)), token_usdc$V1))
+empty_position <- empty_position %>%
+  rename_with(~ paste0(.x, "_position"))
+
 # bind the two columns time of the two tibbles to get all dates, trades and
 # closing prices
 # add a source column
@@ -31,7 +40,27 @@ time_all <- bind_rows(trade_df, close_df) %>%
 # remove day column
 time_all <- time_all %>%
   select(-day)
+# add USDC column
+time_all <- time_all %>%
+  mutate(USDC = 1)
+# add new columns with "TOKEN_position"
+trade_position <- bind_cols(time_all, empty_position[rep(1, nrow(time_all)), ])
 
+
+
+trade_position_long <- trade_position %>%
+  select(value, ends_with("_price")) %>%
+  pivot_longer(
+    cols = -value,
+    names_to = "symbol",
+    values_to = "price"
+  ) %>%
+  mutate(
+    # Enlève le suffixe "_price" pour garder uniquement le nom du token
+    symbol = gsub("_price$", "", symbol),
+    date = as.Date(value)
+  )
+# first solution
 #############################################################
 # second solution
 # mailing list solution
