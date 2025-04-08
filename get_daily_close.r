@@ -33,6 +33,9 @@ get_price <- function(my_token, start_date) {
 }
 
 # Fetch data for each date/token @18:59:59 and return in a tibble
+# first we must remove USDC form the tibble with token
+token_usdc <- token_usdc %>%
+  slice(1:(n() - 1))
 token_daily_close <- token_usdc %>%
   mutate(data = map(V1, ~ get_price(.x, start_date))) %>%
   mutate(token = V1) %>% 
@@ -40,12 +43,18 @@ token_daily_close <- token_usdc %>%
   unnest(data) %>%
   filter(format(close_time, "%H:%M:%S") == "18:59:59") %>%
   select(token, close_time, close)
+
+
+
 # put token names as column names
 token_daily_close <- token_daily_close %>%
   pivot_wider(names_from = token, values_from = close) 
+# add USDC column
+token_daily_close <- token_daily_close %>%
+  mutate(USDC = 1)
  
 token_daily_close <- token_daily_close %>%
- rename(time = close_time)
+  rename_with(~ paste0(.x, "_price"), .cols = -close_time)
 
 
 
