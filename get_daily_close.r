@@ -29,13 +29,12 @@ token_usdc <- unnest(token_usdc, cols = V1)
 
 # function to get prices
 get_price <- function(my_token, start_date) {
-  klines <- binance_klines(my_token, interval = '6h', start_time = start_date)
+  klines <- binance_klines(my_token, interval = '6d', start_time = start_date)
 }
 
 # Fetch data for each date/token @18:59:59 and return in a tibble
 # first we must remove USDC form the tibble with token
-token_usdc <- token_usdc %>%
-  slice(1:(n() - 1))
+
 token_daily_close <- token_usdc %>%
   mutate(data = map(V1, ~ get_price(.x, start_date))) %>%
   mutate(token = V1) %>% 
@@ -47,14 +46,59 @@ token_daily_close <- token_usdc %>%
 
 
 # put token names as column names
-token_daily_close <- token_daily_close %>%
+token_daily_close_wide <- token_daily_close %>%
   pivot_wider(names_from = token, values_from = close) 
-# # add USDC column
-# token_daily_close <- token_daily_close %>%
-#   mutate(USDC = 1)
+
  
 token_daily_close <- token_daily_close %>%
   rename_with(~ paste0(.x, "_price"), .cols = -close_time)
+
+###### GET DAILY CLOASE AT 23:59:59 #######
+
+get_price <- function(my_token, start_date) {
+  klines <- binance_klines(my_token, interval = '1h', start_time = start_date)
+}
+
+token_usdc <- token_usdc %>%
+  filter(V1 != "FTMUSDC") # dès le 2025-01-13
+
+token_daily_close6 <- token_usdc %>%
+  mutate(data = map(V1, ~ get_price(.x, start_date))) %>%
+  mutate(token = V1) %>% 
+  select(-V1) %>%
+  unnest(data) %>%
+  filter(format(close_time, "%H:%M:%S") == "23:59:59") %>%
+  select(token, close_time, close)
+         
+################################################
+# token_daily_close1 : 2024-12-16 --> 2025-01-04
+# token_daily_close1 : 2025-01-05 --> 2025-01-24
+#                      2025-01-25 --> 2025-02-13
+#                      2025-02-14 --> 2025-03-05
+#                      2025-03-06 --> 2025-03-25
+#                      2025-03-26 --> 2025-04-13
+################################################
+
+token_daily_close <- bind_rows(token_daily_close1, token_daily_close2, token_daily_close3,
+                               token_daily_close4, token_daily_close5, token_daily_close6)
+token_daily_close <- token_daily_close %>%
+       arrange(token, close_time)
+
+# remove duplicate
+token_daily_close <- token_daily_close %>%
+  distinct(token, close_time, .keep_all = TRUE)
+# put token as column names
+# we finally have our data frame with closing prices @ 23:59:59
+token_daily_close_final <- token_daily_close %>%
+  pivot_wider(names_from = token, values_from = close)
+
+
+
+
+
+
+
+
 
 
 
