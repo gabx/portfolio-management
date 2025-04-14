@@ -163,6 +163,10 @@ all_trade_no_btc <- all_trade_no_btc %>%
 all_trade_final <- all_trade_no_btc %>%
   select(-status, -side, -btc_price, -order_id)
 
+# clean
+rm('btc_ref_price_col', 'btc_with_price', 'btc_time_tb', 'btc_time_ls', 'trade_list_unique',
+   'all_trade_no_btc', 'btc_trade_rows', 'trade_ls_noempty', 'trade_list_final',
+  'trade_list_tb')
 
 
 
