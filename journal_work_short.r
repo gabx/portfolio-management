@@ -1,7 +1,15 @@
 # this is a short of our real final journal
 # will keep trades from 2024-12-17 to 2025-01-06
-library(zoo)
+# https://enricoschumann.net/notes/computing-portfolio-pl.html
+# https://enricoschumann.net/notes/valuing-positions.html
 
+library(zoo)
+library(PMwR)
+library(dplyr)
+library(tidyr)
+library(purrr)
+
+## HINT : manage dates ##
 # as.numeric(as.POSIXct("2025-01-29 10:25:09", tz = "UTC"))
 # as.numeric(as.Date("2024-12-16")) ---> 20073
 # as.POSIXct(1738142709.422, origin = "1970-01-01", tz = "UTC")
@@ -114,5 +122,15 @@ P <- P[t.valuation, c("BTCUSDC",  'ETHUSDC', 'AAVEUSDC',
 PL <- pl(J, along.timestamp = t.valuation, vprice = P)
 VALO <- valuation(position(J, when = t.valuation), vprice = P, use.names = TRUE)
 
+# we now have the cumulative P/L of the assets for every day, stored in a matrix PL. 
+PL <- sapply(PL, `[[`, "pl")
+tail(PL, 5)
+
+# monthly PL
+library("datetimeutils")
+ii <- c(1, nth_day(timestamp.P,  ## extract position of last day of month
+                   period = "month", n = "last",
+                   index = TRUE))
+diff(PL[ii, ])
 
 
