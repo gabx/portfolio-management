@@ -92,7 +92,7 @@ token_daily_close <- token_daily_close %>%
 token_daily_close_final <- token_daily_close %>%
   pivot_wider(names_from = token, values_from = close)
 
-
+##########################################################
 
 
 
