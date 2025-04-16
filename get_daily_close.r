@@ -60,9 +60,6 @@ get_price <- function(my_token, start_date) {
   return(klines)
 }
 
-token_usdc <- token_usdc %>%
-  filter(V1 != "FTMUSDC") # dès le 2025-01-13
-
 # we need to call 6 times the get_price() to get all the needed days
 # thus the fun() get_daily_close()
 # we need to remove FTM from 2025-01-13 (i = 3) as it doesn't exist anymore and
@@ -107,6 +104,10 @@ token_daily_close <- token_daily_close %>%
 # we finally have our data frame with closing prices @ 23:59:59
 token_daily_close_final <- token_daily_close %>%
   pivot_wider(names_from = token, values_from = close)
+
+# we shall replace FTMUSDT in our token list
+token_usdc <- token_usdc %>%
+  add_row(V1 = "FTMUSDC")
 
 ##########################################################
 
