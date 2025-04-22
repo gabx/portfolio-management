@@ -22,6 +22,20 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 
+## portfolio token as a tibble ##
+# replace BTC & USDT with USDC at the end of the token names
+token <- read.table('assets.csv')
+token_usdc <- token %>%
+  mutate(V1 = sub("BTC$|USDT$", "USDC", V1))
+# remove duplicate
+token_usdc <- token_usdc %>%
+  distinct()
+# transform to a tibble
+token_usdc <- unnest(token_usdc, cols = V1)
+# we need to remove FTM from 2025-01-13 (i = 3) as it doesn't exist anymore and
+# split an error and remove SUSDC as it exists much later
+token_usdc <- token_usdc %>% 
+  filter(!V1 %in% c("FTMUSDC"))
 
 # 1- journal
 J <- journal(
@@ -34,12 +48,13 @@ J <- journal(
 utils::View(J) # we need to run View to see J with RStudio. A probable bug
 # prevents to see J when 
 
-my_sequence <- as.Date(20073:20189) # dates 2024-12-16 --> 2025-04-10, 115 days for 116 dates
+my_sequence <- as.Date(20073:20192) # dates 2024-12-16 --> 2025-04-14, 115 days for 116 dates
 t.valuation <- as.POSIXct(paste(my_sequence, "23:59:59"), tz = "UTC")
+
 # !! the table token_daily_close_final end on 04-14, sp we must remove 4 days to have same 
 # number of days with my_sequence
-token_daily_close_final <- token_daily_close_final %>%
-  slice(1:(n() - 4))
+# token_daily_close_final <- token_daily_close_final %>%
+#   slice(1:(n() - 4))
 
 # # 2- valuation prices 
 # we first create zoo objects for each token
@@ -53,17 +68,19 @@ names(token_zoo_list) <- tokens
 list2env(token_zoo_list, envir = .GlobalEnv)
 
 # create matrix of prices
-P <- pricetable(BTCUSDC, SUIUSDC, ENAUSDC, AAVEUSDC, ETHUSDC, LINKUSDC, SUSDC, OMUSDC, FTMUSDC,
+P <- pricetable(BTCUSDC, SUIUSDC, ENAUSDC, AAVEUSDC, ETHUSDC, SUSDC, OMUSDC,
                 instrument = c('BTCUSDC', 'SUIUSDC', 'ENAUSDC', 'AAVEUSDC', 'ETHUSDC', 
-                               'LINKUSDC', 'SUSDC', 'OMUSDC', 'FTMUSDC'))
+                                'SUSDC', 'OMUSDC'))
 
-P <- P[my_sequence, c('AAVEUSDC', 'BTCUSDC', 'ENAUSDC', 'ETHUSDC', 'FTMUSDC', 
-                      'LINKUSDC', 'OMUSDC', 'SUIUSDC', 'SUSDC'), missing = "previous"]  
+P <- P[my_sequence, c('AAVEUSDC', 'BTCUSDC', 'ENAUSDC', 'ETHUSDC', 
+                       'OMUSDC', 'SUIUSDC', 'SUSDC'), missing = "previous"]  
+
+PL <- pl(J, along.timestamp = t.valuation, vprice = P)
+
+
 
 
 PL <- pl(J, along.timestamp = my_sequence, vprice = P)
-PL <- pl(J, along.timestamp = t.valuation, vprice = P)
-
 PL <- pl(J, along.timestamp = timestamp, vprice = P)
 
 
@@ -78,23 +95,21 @@ JJ <- read.table(text = "
 J$timestamp <- as.POSIXct(J$timestamp)
 
 ########### small exemple #########################################################
-# token : BTCUSDC, AAVEUSDC
+# token : 'SUIUSDC', 'ENAUSDC'  ---> good sur toute la periode
+# 'BTCUSDC', 'AAVEUSDC'  ---> good
+# 'ETHUSDC', 'LINKUSDC'
+# 'SUSDC', 'OMUSDC' ---> good sur toute la periode
+
+# period 12-16 --> 02-15
 
 all_trade_final_short <- all_trade_final %>%
-  filter(symbol %in% c("BTCUSDC", "AAVEUSDC")) %>%
-  filter(time <= as.POSIXct("2025-01-02", tz = "UTC")) %>%
+  filter(symbol %in%  c('ETHUSDC', 'SUSDC')) %>%
   select(-cummulative_quote_qty)
 
+all_trade_final_short <- all_trade_final %>%
+  filter(symbol == 'ETHUSDC') %>%
+  select(-cummulative_quote_qty)
 
-dput(all_trade_final_short)
-structure(list(time = structure(c(1734372600, 1734372720, 1734426090.135, 
-  1734553973.032, 1735810398.277, 1735812883.798, 1735812912.427
-), tzone = "UTC", class = c("POSIXct", "POSIXt")), symbol = c("BTCUSDC", 
-    "AAVEUSDC", "BTCUSDC", "BTCUSDC", "BTCUSDC", "AAVEUSDC", "BTCUSDC"
-), executed_qty = c(9.3372107, 1152.058, 0.04811, 0.12324, -0.06504, 
-    94.408, 0.96557), price = c(107012, 386.55, 107358.81, 101422.93, 
-96408.23, 332.340557, 96606.12)), row.names = c(NA, -7L), class = c("tbl_df", 
-      "tbl", "data.frame"))
 
 J <- journal(
   timestamp = as.POSIXct(all_trade_final_short$time, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
@@ -102,25 +117,22 @@ J <- journal(
   amount = all_trade_final_short$executed_qty,
   price = all_trade_final_short$price
 )
-                                                                   
-dput(J)
-structure(list(instrument = c("BTCUSDC", "AAVEUSDC", "BTCUSDC", 
-  "BTCUSDC", "BTCUSDC", "AAVEUSDC", "BTCUSDC"), timestamp = structure(c(1734372600, 
-1734372720, 1734426090.135, 1734553973.032, 1735810398.277, 1735812883.798, 
-1735812912.427), tzone = "UTC", class = c("POSIXct", "POSIXt"
-)), amount = c(9.3372107, 1152.058, 0.04811, 0.12324, -0.06504, 
-94.408, 0.96557), price = c(107012, 386.55, 107358.81, 101422.93, 
-  96408.23, 332.340557, 96606.12)), class = "journal")
+ 
 
-my_sequence <- as.Date(20073:20090)
+utils::View(J)
+
+# my_sequence <- as.Date(20073:20134)
+# t.valuation <- as.POSIXct(paste(my_sequence, "23:59:59"), tz = "UTC")
+
+my_sequence <- as.Date(20073:20192)
 t.valuation <- as.POSIXct(paste(my_sequence, "23:59:59"), tz = "UTC")
 
 token_daily_close_final_short <- token_daily_close_final %>%
-  select(close_time, AAVEUSDC, BTCUSDC) %>%
-  filter(close_time <= as.POSIXct("2025-01-02", tz = "UTC"))
+  select(close_time, ETHUSDC, SUSDC) 
 
-token_zoo_list_short <- sapply(c('BTCUSDC', 'AAVEUSDC'), get_token_zoo, simplify = FALSE)
-tokens <- c('BTCUSDC', 'AAVEUSDC')
+
+token_zoo_list_short <- sapply( c('ETHUSDC', 'SUSDC'), get_token_zoo, simplify = FALSE)
+tokens <- c('ETHUSDC', 'SUSDC')
 names(token_zoo_list_short) <- tokens
 list2env(token_zoo_list_short, envir = .GlobalEnv)
 
@@ -128,21 +140,9 @@ get_token_zoo <- function(token_name) {
   zoo(token_daily_close_final_short[[token_name]], order.by = my_sequence)
 }
 
-P <- pricetable(BTCUSDC, AAVEUSDC,
-                instrument = c('BTCUSDC', 'AAVEUSDC'))
+P <- pricetable(ETHUSDC, SUSDC,
+                instrument = c('ETHUSDC', 'SUSDC'))
 
-P <- P[my_sequence, c('AAVEUSDC', 'BTCUSDC'), missing = "previous"]  
-
-dput(P)
-structure(c(382.68, 361.93, 343.39, 319.26, 328.11, 298.39, 319.08, 
-            388.12, 374.46, 367.89, 337.9, 323.5, 356.13, 329.39, 323.61, 
-            309.04, 320.14, 382.68, 105848.87, 105961.05, 101128.08, 98300.3, 
-            97408.97, 97088.03, 95443.06, 95064.95, 98696.01, 98736, 95712.33, 
-            94301.25, 95148, 92948.39, 92626.69, 93310.64, 94596.01, 105848.87
-), dim = c(18L, 2L), dimnames = list(c("2024-12-16", "2024-12-17", 
-                                       "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-21", "2024-12-22", 
-                                       "2024-12-23", "2024-12-24", "2024-12-25", "2024-12-26", "2024-12-27", 
-                                       "2024-12-28", "2024-12-29", "2024-12-30", "2024-12-31", "2025-01-01", 
-                                       "2025-01-02"), c("AAVEUSDC", "BTCUSDC")))
+P <- P[my_sequence, c('ETHUSDC', 'SUSDC'), missing = "previous"]  
 
 PL <- pl(J, along.timestamp = t.valuation, vprice = P)
