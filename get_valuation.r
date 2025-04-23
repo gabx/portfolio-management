@@ -51,11 +51,6 @@ utils::View(J) # we need to run View to see J with RStudio. A probable bug
 my_sequence <- as.Date(20073:20192) # dates 2024-12-16 --> 2025-04-14, 115 days for 116 dates
 t.valuation <- as.POSIXct(paste(my_sequence, "23:59:59"), tz = "UTC")
 
-# !! the table token_daily_close_final end on 04-14, sp we must remove 4 days to have same 
-# number of days with my_sequence
-# token_daily_close_final <- token_daily_close_final %>%
-#   slice(1:(n() - 4))
-
 # # 2- valuation prices 
 # we first create zoo objects for each token
 get_token_zoo <- function(token_name) {
@@ -86,30 +81,16 @@ PL <- pl(J, along.timestamp = timestamp, vprice = P)
 
 VALO <- valuation(position(J, when = t.valuation), vprice = P, use.names = TRUE)
 
-JJ <- read.table(text = "
-    instrument,timestamp,amount,price
-    A,2025-04-08 15:00:00,  10, 10
-    A,2025-04-08 16:00:00,  -5, 20
-    B,2025-04-08 22:00:00, 100, 5
-    ", sep = ",", header = TRUE)
-J$timestamp <- as.POSIXct(J$timestamp)
-
-########### small exemple #########################################################
+########### small exemple for testing purpose ############################
 # token : 'SUIUSDC', 'ENAUSDC'  ---> good sur toute la periode
 # 'BTCUSDC', 'AAVEUSDC'  ---> good
 # 'ETHUSDC', 'LINKUSDC'
 # 'SUSDC', 'OMUSDC' ---> good sur toute la periode
-
 # period 12-16 --> 02-15
 
 all_trade_final_short <- all_trade_final %>%
-  filter(symbol %in%  c('ETHUSDC', 'SUSDC')) %>%
+  filter(symbol %in%  c('ETHUSDC', 'SUSDC', 'SUIUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC', 'OMUSDC')) %>%
   select(-cummulative_quote_qty)
-
-all_trade_final_short <- all_trade_final %>%
-  filter(symbol == 'ETHUSDC') %>%
-  select(-cummulative_quote_qty)
-
 
 J <- journal(
   timestamp = as.POSIXct(all_trade_final_short$time, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
@@ -119,20 +100,15 @@ J <- journal(
 )
  
 
-utils::View(J)
-
-# my_sequence <- as.Date(20073:20134)
-# t.valuation <- as.POSIXct(paste(my_sequence, "23:59:59"), tz = "UTC")
-
 my_sequence <- as.Date(20073:20192)
 t.valuation <- as.POSIXct(paste(my_sequence, "23:59:59"), tz = "UTC")
 
 token_daily_close_final_short <- token_daily_close_final %>%
-  select(close_time, ETHUSDC, SUSDC) 
+  select(close_time, SUSDC, ETHUSDC, SUIUSDC, ENAUSDC, BTCUSDC, AAVEUSDC, OMUSDC) 
 
 
-token_zoo_list_short <- sapply( c('ETHUSDC', 'SUSDC'), get_token_zoo, simplify = FALSE)
-tokens <- c('ETHUSDC', 'SUSDC')
+token_zoo_list_short <- sapply(c('ETHUSDC', 'SUSDC', 'SUIUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC', 'OMUSDC') , get_token_zoo, simplify = FALSE)
+tokens <- c('ETHUSDC', 'SUSDC', 'SUIUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC', 'OMUSDC')
 names(token_zoo_list_short) <- tokens
 list2env(token_zoo_list_short, envir = .GlobalEnv)
 
@@ -140,9 +116,9 @@ get_token_zoo <- function(token_name) {
   zoo(token_daily_close_final_short[[token_name]], order.by = my_sequence)
 }
 
-P <- pricetable(ETHUSDC, SUSDC,
-                instrument = c('ETHUSDC', 'SUSDC'))
+P <- pricetable(SUSDC,ETHUSDC,SUIUSDC,ENAUSDC,BTCUSDC,AAVEUSDC,OMUSDC,
+                instrument = c('ETHUSDC', 'SUSDC', 'SUIUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC', 'OMUSDC'))
 
-P <- P[my_sequence, c('ETHUSDC', 'SUSDC'), missing = "previous"]  
+P <- P[my_sequence, c('ETHUSDC', 'SUSDC', 'SUIUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC', 'OMUSDC'), missing = "previous"]  
 
 PL <- pl(J, along.timestamp = t.valuation, vprice = P)
