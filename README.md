@@ -2,35 +2,48 @@
 
 MLC portfolio management with R
 
-### Packages
+This is en ensemble of scripts to build a trading journal, based on trades and open positions. 
+The final result will show daily PL and valuation splited by token and for each day.
+We will then build our daily valuation and some compute returns, contributions.
+Finally, everything shall be presented witha nice formatting html or Markdown files.
 
-* [PMwR](https://cran.r-project.org/web/packages/PMwR/): Portfolio Manager with R  
-* [binancer](https://github.com/daroczig/binancer): get all trades from Binance exchange
-* [orgutils](https://cran.r-project.org/web/packages/orgutils/index.html): highly flexible 
-structured plain text file format
+Aside classic packages to work with data frame (dplyr, tydiverse, purr), our work will be based on 
+[PMwR](https://cran.r-project.org/web/packages/PMwR/) and [binancer](https://github.com/daroczig/binancer)
+packages. 
 
-### Manuals
+The portfolio is composed from BTC and some altcoins for [Mon Livret C](https://www.monlivretc.com/)
 
-* [PMwR manual](https://enricoschumann.net/R/packages/PMwR/manual)
+Each script has been assigned a specific task:
 
-### The journal
-This is a list of vectors, very similar to a `data.frame` created through the function `journal`. Components of a 
-journal should always be retrieved by name.
+## 0- Main script
+main_script.r
 
-Fields are:
+## 1- Environment variables
+environment_variable.r 
 
-* amount
-* timestamp
-* price
-* instrument
+- libraries to load
 
-All fields except amount can be missing.
+- environment variables
 
-The function `journal()` creates `journal` objects.
+- few settings
 
-The function `position()` gives the current balance of all instruments. By default, 
-the function will aggregate all transactions of the journal, no matter when they occurred.
+## 2- get trades
+get_all_trade.r
 
-In general, a journal need not be sorted in any particular way. There is a `sort` 
-method for journals, whose default is to sort by timestamp. 
+## 4- get daily closing prices for our portfolio tokens
+get_all_trades.r
+
+get_daily_closes.r
+
+## 5- build the journal and the daily valuation
+get_valuation.r
+
+## 6- update the data with time
+get_valuation_update.r
+
+## 7- Valuations vizualisations
+valuation_vizualisation.r
+
+
+
 
