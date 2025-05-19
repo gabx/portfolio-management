@@ -27,21 +27,22 @@ environment_variable.r
 
 - few settings
 
-## 2- get trades
-get_all_trade.r
 
-## 4- get daily closing prices for our portfolio tokens
+## 2- get trades
+[get_all_trade.r](#get-all-trade)
+
+## 3- get daily closing prices for our portfolio tokens
 get_all_trades.r
 
 get_daily_closes.r
 
-## 5- build the journal and the daily valuation
+## 4- build the journal and the daily valuation
 get_valuation.r
 
-## 6- update the data with time
+## 5- update the data with time
 get_valuation_update.r
 
-## 7- Valuations vizualisations
+## 6- Valuations vizualisations
 valuation_vizualisation.r
 
 
