@@ -1,3 +1,5 @@
+# PART II
+  
 # write trades 
 # https://enricoschumann.net/notes/
 
@@ -56,8 +58,7 @@ trade_tb_start <- tibble(
 
 ##################### FETCH TRADES ##############################
 
-############# PERIOD I ##########################
-binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
+############# PERIOD I ##########################binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
 # Define start and end dates in POSIXct format (UTC)
 #start_date <- as.numeric(as.POSIXct("2024-12-16", tz = 'UTC'))
 start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
@@ -163,7 +164,7 @@ all_trade_no_btc <- all_trade_no_btc %>%
 all_trade_final <- all_trade_no_btc %>%
   select(-status, -side, -btc_price, -order_id)
 
-# clean
+# clean environment
 rm('btc_ref_price_col', 'btc_with_price', 'btc_time_tb', 'btc_time_ls', 'trade_list_unique',
    'all_trade_no_btc', 'btc_trade_rows', 'trade_ls_noempty', 'trade_list_final',
   'trade_list_tb', 'all_trade', 'btc_value', 'token', 'token_list', 'token_list_filter',
