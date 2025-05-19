@@ -1,3 +1,5 @@
+# PART I
+
 # This is all needed packages and variables to write our trading journal, plus a few
 # settings
 
