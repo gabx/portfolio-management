@@ -13,9 +13,9 @@ library('PerformanceAnalytics')
 binance_credentials(Sys.getenv('BINANCE_KEY2'), Sys.getenv('BINANCE_SECRET2')) 
 token <- read.table('assets.csv') # !! no SUSDT price before 01-16. Removed from csv
 
-# Define start and end dates in POSIXct format (UTC)
+# Define start date in POSIXct format (UTC)
 start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
-# end_date   <- as.POSIXct(today(), tz = 'UTC')
+
 
 ## portfolio token as a tibble ##
 # replace BTC & USDT with USDC at the end of the token names
