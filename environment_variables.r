@@ -24,6 +24,18 @@ options(scipen = 999, digits = 8)
 ### portfolio token as a tibble ###
 # replace BTC & USDT with USDC at the end of the token names
 token <- read.table('assets.csv')
+
+## we need a list
+token_list <- as.list(token$V1)
+token_list_usdc <- lapply(token_list, function(x) {
+  x <- gsub("BTC", "USDC", x)
+  gsub("USDT", "USDC", x)
+})
+token_list_usdc_unique <- unique(token_list_usdc)
+token_list_usdc_unique <- token_list_usdc_unique[!token_list_usdc_unique %in% c("FTMUSDC", "USDCUSDC")]
+token_list_usdc_unique <- c(token_list_usdc_unique, "BTCUSDC")
+
+## and a tibble
 token_usdc <- token %>%
   mutate(V1 = sub("BTC$|USDT$", "USDC", V1))
 # remove duplicate
