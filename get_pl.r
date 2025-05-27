@@ -1,11 +1,6 @@
-# this script will allow to build a valuation table with daily portfolio valuation,
-# dates and assets.
-# A first script, journal_work_short, has been writing to test the code on a smaller
-# set of data.
-# code is based on work of enrico schuman
-# https://enricoschumann.net/notes/computing-portfolio-pl.html
-# https://enricoschumann.net/notes/valuing-positions.html
-################################################################################
+
+
+
 ## HINT : manage dates ##
 # as.numeric(as.POSIXct("2025-01-29 10:25:09", tz = "UTC"))
 # as.numeric(as.Date("2024-12-16")) ---> 20073
@@ -21,21 +16,22 @@ library(PMwR)
 library(dplyr)
 library(tidyr)
 library(purrr)
+library(data.table)
 
-## portfolio token as a tibble ##
-# replace BTC & USDT with USDC at the end of the token names
-token <- read.table('assets.csv')
-token_usdc <- token %>%
-  mutate(V1 = sub("BTC$|USDT$", "USDC", V1))
-# remove duplicate
-token_usdc <- token_usdc %>%
-  distinct()
-# transform to a tibble
-token_usdc <- unnest(token_usdc, cols = V1)
-# we need to remove FTM from 2025-01-13 (i = 3) as it doesn't exist anymore and
-# split an error and remove SUSDC as it exists much later
-token_usdc <- token_usdc %>% 
-  filter(!V1 %in% c("FTMUSDC"))
+# ## portfolio token as a tibble ##
+# # replace BTC & USDT with USDC at the end of the token names
+# token <- read.table('assets.csv')
+# token_usdc <- token %>%
+#   mutate(V1 = sub("BTC$|USDT$", "USDC", V1))
+# # remove duplicate
+# token_usdc <- token_usdc %>%
+#   distinct()
+# # transform to a tibble
+# token_usdc <- unnest(token_usdc, cols = V1)
+# # we need to remove FTM from 2025-01-13 (i = 3) as it doesn't exist anymore and
+# # split an error and remove SUSDC as it exists much later
+# token_usdc <- token_usdc %>% 
+#   filter(!V1 %in% c("FTMUSDC"))
 
 # 1- journal
 J <- journal(
@@ -57,9 +53,12 @@ get_token_zoo <- function(token_name) {
   zoo(token_daily_close_final[[token_name]], order.by = my_sequence)
 }
 # apply the function to our token, then save in our env each zoo object
+# get a list of zoo objects (value/date) for each token
 token_zoo_list <- sapply(token_usdc$V1, get_token_zoo, simplify = FALSE)
 tokens <- pull(token_usdc, V1)
 names(token_zoo_list) <- tokens
+# we have zoo objects in our env which are named by the token. Each token is a zoo
+# serie with date (index) and closing price (data)
 list2env(token_zoo_list, envir = .GlobalEnv)
 
 # create matrix of prices
@@ -70,16 +69,49 @@ P <- pricetable(BTCUSDC, SUIUSDC, ENAUSDC, AAVEUSDC, ETHUSDC, SUSDC, OMUSDC,
 P <- P[my_sequence, c('AAVEUSDC', 'BTCUSDC', 'ENAUSDC', 'ETHUSDC', 
                        'OMUSDC', 'SUIUSDC', 'SUSDC'), missing = "previous"]  
 
+J <- subset(J, instrument %in% colnames(P)) # there is an issue with FTMUSDC which is in J$instrument but not in P
+
 PL <- pl(J, along.timestamp = t.valuation, vprice = P)
 
 
 
-
-PL <- pl(J, along.timestamp = my_sequence, vprice = P)
-PL <- pl(J, along.timestamp = timestamp, vprice = P)
-
-
 VALO <- valuation(position(J, when = t.valuation), vprice = P, use.names = TRUE)
+
+# PL_df <- data.frame(
+#   timestamp = attr(PL, "along.timestamp"),
+#   OMUSDC_pl = PL$OMUSDC$pl,
+#   SUIUSDC_pl = PL$SUIUSDC$pl
+# )
+
+## mise en forme
+
+PL_AAVEUSDC <- PL[[1]]
+
+dt_AAVE <- data.table(
+  timestamp = PL_AAVEUSDC$timestamp,
+  pl = as.numeric(PL_AAVEUSDC$pl),
+  realised = as.numeric(PL_AAVEUSDC$realised),
+  unrealised = as.numeric(PL_AAVEUSDC$unrealised),
+  buy = PL_AAVEUSDC$buy,
+  sell = PL_AAVEUSDC$sell,
+  volume = PL_AAVEUSDC$volume
+)
+
+aave_pl <- dt_AAVE[45,]
+aave_pl <- aave_pl[[3]]
+
+PL_ENA <- PL[[3]]
+
+dt_ENA <- data.table(
+  timestamp = PL_ENA$timestamp,
+  pl = as.numeric(PL_ENA$pl),
+  realised = as.numeric(PL_ENA$realised),
+  unrealised = as.numeric(PL_ENA$unrealised),
+  buy = PL_ENA$buy,
+  sell = PL_ENA$sell,
+  volume = PL_ENA$volume
+)
+
 
 ########### small exemple for testing purpose ############################
 # token : 'SUIUSDC', 'ENAUSDC'  ---> good sur toute la periode
