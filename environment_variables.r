@@ -49,17 +49,7 @@ token_usdc <- token_usdc %>%
   filter(!V1 %in% c("FTMUSDC"))
 
 
-### Binance credentials, return trades ###
-# first period
-binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
-start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
-# return trades for assets for a specific period. A list of data frames
-trade_ls <- mapply(binance_all_orders, start_time = start_date, symbol = token_list, SIMPLIFY = FALSE)
 
-# second period
-binance_credentials(Sys.getenv('BINANCE_KEY2'), Sys.getenv('BINANCE_SECRET2')) 
-start_date2 <- as.POSIXct("2025-03-04", tz = 'UTC')
-trade_ls2 <- mapply(binance_all_orders, start_time = start_date2, symbol = token_list, SIMPLIFY = FALSE)
 
 
 
