@@ -37,7 +37,7 @@ token_list <- as.list(token$V1)
 
 ##########################
 
-
+# we replaced FTM by S (Sonic) as FTM changed to S 
 trade_tb_start <- tibble(
   time = as.POSIXct(c(
     '2024-12-16 18:02:00',
@@ -47,7 +47,7 @@ trade_tb_start <- tibble(
     '2024-12-16 18:10:00',
     '2024-12-16 18:12:00'
   ), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-  symbol = c('FTMUSDC', 'SUIUSDC', 'ETHUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC'),
+  symbol = c('SUSDC', 'SUIUSDC', 'ETHUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC'),
   executed_qty = c(284270, 80024, 91.8981, 207836, 9.3372107, 1152.058),
   price = c(1.382, 4.7256, 4038, 1.1855, 107012, 386.55),
   status = rep('FILLED', 6),
@@ -58,7 +58,8 @@ trade_tb_start <- tibble(
 
 ##################### FETCH TRADES ##############################
 
-############# PERIOD I ##########################binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
+############# PERIOD I ##########################
+binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
 # Define start and end dates in POSIXct format (UTC)
 #start_date <- as.numeric(as.POSIXct("2024-12-16", tz = 'UTC'))
 start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
@@ -79,6 +80,9 @@ trade_list_filter <- lapply(trade_ls_noempty, function(df) df %>% select(any_of(
         'executed_qty', 'cummulative_quote_qty', 'status', 'side', 'time'))))
 # make one data.frame with all data.frame from the list
 trade_list <- data.table::rbindlist(trade_list_filter, use.names = TRUE, fill = TRUE)
+# replace FTMUSDT by SUSDT
+trade_list <- trade_list %>%
+  mutate(symbol = if_else(symbol == "FTMUSDT", "SUSDT", symbol))
 # remove duplicate
 trade_list_unique <- trade_list[!duplicated(order_id)]
 # order by timestamp
