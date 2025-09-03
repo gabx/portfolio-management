@@ -36,6 +36,7 @@ mid_date <- as.POSIXct("2025-03-04", tz = 'UTC') # date of new account
 
 
 # 0.6 load the initial portfolio state
+# # we replaced FTM by S (Sonic) as FTM changed to S 
 trade_tb_start <- tibble(
   time = as.POSIXct(c(
     '2024-12-16 18:02:00',
