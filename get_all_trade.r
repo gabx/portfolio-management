@@ -5,14 +5,11 @@
 
 
 
-##################### FETCH TRADES ##############################
+############################# FETCH TRADES ##################################
+### return trades for assets for a specific period. A list of data frames ###
 
 ############# PERIOD I ##########################
 binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
-# Define start and end dates in POSIXct format (UTC)
-#start_date <- as.numeric(as.POSIXct("2024-12-16", tz = 'UTC'))
-# start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
-# return trades for assets for a specific period. A list of data frames
 trade_ls1 <- mapply(binance_all_orders, start_time = start_date, symbol = token_list, SIMPLIFY = FALSE)
 ############# PERIOD II ##########################
 binance_credentials(Sys.getenv('BINANCE_KEY2'), Sys.getenv('BINANCE_SECRET2')) 
@@ -20,35 +17,35 @@ trade_ls2 <- mapply(binance_all_orders, start_time = mid_date, symbol = token_li
 
 ############# CLEAN REORDER #######################
 # make one list
-two_period_trade <- c(trade_ls, trade_ls2)
+whole_trade <- c(trade_ls1, trade_ls2)
 # remove empty data.frames from the list
-trade_ls_noempty <- Filter(function(df) nrow(df) > 0 && all(dim(df) > 0), two_period_trade)
+whole_trade_noempty <- Filter(function(df) nrow(df) > 0 && all(dim(df) > 0), whole_trade)
 # keep specific columns. We use dplyr
-trade_list_filter <- lapply(trade_ls_noempty, function(df) df %>% select(any_of(c('symbol', 'order_id',
+trade_list_filter <- lapply(whole_trade_noempty, function(df) df %>% select(any_of(c('symbol', 'order_id',
         'executed_qty', 'cummulative_quote_qty', 'status', 'side', 'time'))))
 # make one data.frame with all data.frame from the list
-trade_list <- data.table::rbindlist(trade_list_filter, use.names = TRUE, fill = TRUE)
+trade_df<- data.table::rbindlist(trade_list_filter, use.names = TRUE, fill = TRUE)
 # replace FTMUSDT by SUSDT
-trade_list <- trade_list %>%
+trade_df <- trade_df %>%
   mutate(symbol = if_else(symbol == "FTMUSDT", "SUSDT", symbol))
 # remove duplicate
-trade_list_unique <- trade_list[!duplicated(order_id)]
+trade_df_unique <- trade_df[!duplicated(order_id)]
 # order by timestamp
-trade_list_unique   <- trade_list_unique %>% arrange(time)
+trade_df_unique   <- trade_df_unique %>% arrange(time)
 # add a new column price
-trade_list_unique  <- trade_list_unique  %>% mutate(price = cummulative_quote_qty / executed_qty )
+trade_df_unique  <- trade_df_unique  %>% mutate(price = cummulative_quote_qty / executed_qty )
 # round price to 6 digits
-trade_list_unique  <- trade_list_unique  %>% mutate(price = round(price, 6))
+trade_df_unique  <- trade_df_unique  %>% mutate(price = round(price, 6))
 # make executed_qty negative when side is SELL
-trade_list_final <- trade_list_unique %>%
+trade_df_final <- trade_df_unique %>%
   mutate(executed_qty = ifelse(side == "SELL", -abs(executed_qty), executed_qty))
 # make cumulative_quote_qty negative when side is SELL
-trade_list_final <- trade_list_final %>%
+trade_df_final <- trade_df_final %>%
   mutate(cummulative_quote_qty = ifelse(side == "SELL", -abs(cummulative_quote_qty), cummulative_quote_qty))
 # transform into a tibble
-trade_list_tb <- as_tibble(trade_list_final)
+trade_tb <- as_tibble(trade_df_final)
 # Remove rows where any column has NaN
-trade_list_tb <- trade_list_tb %>%
+trade_tb <- trade_tb %>%
   filter(if_all(everything(), ~ !is.nan(.)))
 
 ################ JOIN ########################
