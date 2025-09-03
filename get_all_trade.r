@@ -115,9 +115,10 @@ all_trade_final <- all_trade_no_btc %>%
 
 # clean environment
 rm('btc_ref_price_col', 'btc_with_price', 'btc_time_tb', 'btc_time_ls', 'trade_list_unique',
-   'all_trade_no_btc', 'btc_trade_rows', 'trade_ls_noempty', 'trade_list_final',
-  'trade_list_tb', 'all_trade', 'btc_value', 'token', 'token_list', 'token_list_filter',
-  'trade_ls', 'trade_ls2', 'two_period_trade', 'trade_list', 'trade_list_filter')
+   'all_trade_no_btc', 'btc_trade_rows', 'trade_list_final',
+  'trade_list_tb', 'all_trade', 'btc_value', 'token', 'token_list',
+   'trade_ls2', 'trade_list', 'trade_list_filter', 'trade_ls1', 'trade_df', 'trade_df_unique',
+  'whole_trade')
 
 
 
