@@ -11,13 +11,12 @@
 binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
 # Define start and end dates in POSIXct format (UTC)
 #start_date <- as.numeric(as.POSIXct("2024-12-16", tz = 'UTC'))
-start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
+# start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
 # return trades for assets for a specific period. A list of data frames
-trade_ls <- mapply(binance_all_orders, start_time = start_date, symbol = token_list, SIMPLIFY = FALSE)
+trade_ls1 <- mapply(binance_all_orders, start_time = start_date, symbol = token_list, SIMPLIFY = FALSE)
 ############# PERIOD II ##########################
 binance_credentials(Sys.getenv('BINANCE_KEY2'), Sys.getenv('BINANCE_SECRET2')) 
-start_date2 <- as.POSIXct("2025-03-04", tz = 'UTC')
-trade_ls2 <- mapply(binance_all_orders, start_time = start_date2, symbol = token_list, SIMPLIFY = FALSE)
+trade_ls2 <- mapply(binance_all_orders, start_time = mid_date, symbol = token_list, SIMPLIFY = FALSE)
 
 ############# CLEAN REORDER #######################
 # make one list
