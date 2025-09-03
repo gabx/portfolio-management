@@ -4,7 +4,9 @@
 # https://enricoschumann.net/notes/
 
 # we want finally all paires against USDC, replacing USDT and BTC
-
+# Define start date in POSIXct format (UTC)
+start_date1 <- as.POSIXct("2024-12-16", tz = 'UTC')
+start_date2 <- as.POSIXct("2025-03-04",, tz = 'UTC')
 ################### STARTER #####################################
 
 library('PMwR')
