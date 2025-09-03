@@ -9,12 +9,6 @@ start_date1 <- as.POSIXct("2024-12-16", tz = 'UTC')
 start_date2 <- as.POSIXct("2025-03-04",, tz = 'UTC')
 ################### STARTER #####################################
 
-library('PMwR')
-library('binancer')
-library('rjson')
-library('dplyr')
-library(stringr)
-library(tibble)
 
 # prevent scientific notation for numbers 8.8214000e+02
 options(scipen = 999, digits = 8)
