@@ -1,15 +1,15 @@
 
-# 0.1 Reproductibilité
+# Reproductibilité
 install.packages(c("renv","targets","tarchetypes","tidyverse","lubridate","tzdb","PMwR","binancer","arrow", "targets"))
 renv::init()  # fige les deps
 
-# 0.2  Arborescence standard
+# Arborescence standard
 dir.create("R", showWarnings = FALSE)
 dir.create("data/raw", recursive = TRUE, showWarnings = FALSE)
 dir.create("data/processed", showWarnings = FALSE)
 dir.create("reports", showWarnings = FALSE)
 
-# 0.3 load packages
+# load packages
 library(zoo)
 library(PMwR) 
 library(dplyr)
@@ -24,18 +24,14 @@ library(stringr)
 library(tibble)
 
 
-# 0.4 read Binance keys
-# binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
-# binance_credentials(Sys.getenv('BINANCE_KEY2'), Sys.getenv('BINANCE_SECRET2')) 
-
-# 0.5 few settings
+# few settings
 # prevent scientific notation for numbers 8.8214000e+02
 options(scipen = 999, digits = 8)
 start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
 mid_date <- as.POSIXct("2025-03-04", tz = 'UTC') # date of new account
 
 
-# 0.6 load the initial portfolio state
+# load the initial portfolio state
 # # we replaced FTM by S (Sonic) as FTM changed to S 
 trade_tb_start <- tibble(
   time = as.POSIXct(c(
