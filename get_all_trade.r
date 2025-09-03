@@ -4,50 +4,6 @@
 # https://enricoschumann.net/notes/
 
 
-################### STARTER #####################################
-
-
-# prevent scientific notation for numbers 8.8214000e+02
-options(scipen = 999, digits = 8)
-# get our token list
-token <- read.table('assets.csv')
-# Convert to a Character Vector (Recommended for mapply)
-token_list <- as.list(token$V1)
-# journal au 16 dec
-# trade_tb_start <- tibble(
-#   time = as.POSIXct('2024-12-16 18:02:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), 
-#   as.POSIXct('2024-12-16 18:04:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-#   as.POSIXct('2024-12-16 18:06:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-#   as.POSIXct('2024-12-16 18:08:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-#   as.POSIXct('2024-12-16 18:10:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-#   as.POSIXct('2024-12-16 18:12:00', format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), 
-#   symbol = c('FTMUSDC', 'SUIUSDC', 'ETHUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC' ),
-#   executed_qty = c(284270, 80024, 91.8981, 207836, 9.3372107, 1152.058), 
-#   price = c(1.382, 4.7256, 4038, 1.1855, 107012, 386.55),
-#   status = rep('FILLED', 6),
-#   side = rep('BUY', 6),
-#   cummulative_quote_qty = executed_qty * price) 
-
-##########################
-
-# we replaced FTM by S (Sonic) as FTM changed to S 
-trade_tb_start <- tibble(
-  time = as.POSIXct(c(
-    '2024-12-16 18:02:00',
-    '2024-12-16 18:04:00',
-    '2024-12-16 18:06:00',
-    '2024-12-16 18:08:00',
-    '2024-12-16 18:10:00',
-    '2024-12-16 18:12:00'
-  ), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-  symbol = c('SUSDC', 'SUIUSDC', 'ETHUSDC', 'ENAUSDC', 'BTCUSDC', 'AAVEUSDC'),
-  executed_qty = c(284270, 80024, 91.8981, 207836, 9.3372107, 1152.058),
-  price = c(1.382, 4.7256, 4038, 1.1855, 107012, 386.55),
-  status = rep('FILLED', 6),
-  side = rep('BUY', 6)
-) |>
-  mutate(cummulative_quote_qty = executed_qty * price)
-########################################################
 
 ##################### FETCH TRADES ##############################
 
