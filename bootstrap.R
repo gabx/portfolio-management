@@ -27,9 +27,15 @@ library(tibble)
 # few settings
 # prevent scientific notation for numbers 8.8214000e+02
 options(scipen = 999, digits = 8)
-start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
-mid_date <- as.POSIXct("2025-03-04", tz = 'UTC') # date of new account
+# start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
+# mid_date <- as.POSIXct("2025-03-04", tz = 'UTC') # date of new account
 
+# not sure about this
+# Sys.setenv(START_DATE =  as.POSIXct("2024-12-16", tz = 'UTC'))
+# Sys.setenv(MID_DATE =  as.POSIXct("2025-03-04", tz = 'UTC'))
+
+start_date <- as.POSIXct("2024-12-16", tz = 'UTC')
+mid_date <- as.POSIXct("2025-03-04", tz = 'UTC')
 
 # load the initial portfolio state
 # # we replaced FTM by S (Sonic) as FTM changed to S 
