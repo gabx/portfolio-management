@@ -61,7 +61,7 @@ token_daily_close <- token_daily_close %>%
   pivot_wider(names_from = token, values_from = close)
 
 # replace NA with 0.6979 price for SUSDC
-all_token_daily_close <- token_daily_close_final %>%
+token_daily_close <- token_daily_close %>%
   mutate(SUSDC = if_else(is.na(SUSDC), 0.6979, SUSDC))
 
 
