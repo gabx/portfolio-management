@@ -7,8 +7,8 @@
 ### return trades for assets for a specific period. A list of data frames ###
 
 get_all_trades <- function(tokens,
-                           start_date = Sys.getenv("START_DATE"),
-                           mid_date   = Sys.getenv("MID_DATE")) {
+                           start_date = start_date,
+                           mid_date   = mid_date) {
 
 ############# PERIOD I ##########################
 binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
