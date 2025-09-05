@@ -1,37 +1,29 @@
-
-#' Séquence de dates tous les 19 jours
-#' @param start Date de départ (ex. "2024-12-16" ou objet Date)
-#' @param end   Date de fin (par défaut: aujourd'hui en Europe/Paris)
-#' @param at_close TRUE pour renvoyer des POSIXct à 19:59:59 Europe/Paris
-#' @param tz    Fuseau horaire pour at_close (par défaut "Europe/Paris")
-dates_every_19_days <- function(start = "2024-12-16",
-                                end   = NULL,
-                                at_close = FALSE,
-                                tz = "Europe/Paris") {
-  # calcule "aujourd'hui" dans le fuseau demandé
-  if (is.null(end)) {
-    end <- as.Date(lubridate::with_tz(Sys.time(), tz))
-  }
-  # normalisation des entrées
-  start <- as.Date(start)
-  end   <- as.Date(end)
-  if (end < start) stop("La date de fin est antérieure à la date de début.")
+#' S�quence de dates tous les 19 jours (inclusif)
+#' @param first_day Date de d�part ("YYYY-MM-DD" ou Date)
+#' @param last_day  Date de fin ("YYYY-MM-DD" ou Date)
+#' @param output    "Date" (par d�faut), "character" (YYYY-MM-DD), ou "string" (une ligne)
+#' @return Un vecteur de Date / de caract�res / ou une seule cha�ne
+dates_every_19_days <- function(first_day, last_day, output = c("Date","character","string")) {
+  output <- match.arg(output)
+  fd <- as.Date(first_day)
+  ld <- as.Date(last_day)
+  if (is.na(fd) || is.na(ld)) stop("first_day/last_day doivent �tre parsables en Date (YYYY-MM-DD).", call. = FALSE)
+  if (ld < fd) stop("last_day doit �tre >= first_day.", call. = FALSE)
   
-  # séquence tous les 19 jours (inclus le start; s'arrête au plus tard à end)
-  seq_dates <- seq.Date(from = start, to = end, by = "19 days")
+  ds <- seq.Date(from = fd, to = ld, by = "19 days")  # s'arr�te avant de d�passer last_day
   
-  if (!at_close) return(seq_dates)
-  
-  # retourne des POSIXct à 19:59:59 dans le TZ demandé
-  as.POSIXct(paste(seq_dates, "19:59:59"), tz = tz)
+  if (output == "Date")       return(ds)
+  if (output == "character")  return(format(ds, "%Y-%m-%d"))
+  paste(format(ds, "%Y-%m-%d"), collapse = ", ")
 }
 
-################## EXAMPLES ############################
-# 1) Dates tous les 19 jours depuis 2024-12-16 jusqu'� aujourd'hui
-# dates_every_19_days("2024-12-16")
+############ EXEMPLES ############################
+# Vecteur de Date
+dates_every_19_days ("2024-12-16", Sys.Date())
 
-# 2) M�me chose mais � l'heure de cl�ture 19:59:59 Europe/Paris
-# dates_every_19_days("2024-12-16", at_close = TRUE)
+# Vecteur de cha�nes "YYYY-MM-DD"
+dates_every_19_days ("2024-12-16", Sys.Date(), output = "character")
 
-# 3) Fen�tre explicite (par ex. jusqu'au 2025-06-01)
-# dates_every_19_days("2024-12-16", end = "2025-06-01")
+# Cha�ne unique format�e comme ton exemple
+dates_every_19_days ("2024-12-16", Sys.Date(), output = "string")
+# "2024-12-16, 2025-01-04, 2025-01-23, 2025-02-11, ..."
