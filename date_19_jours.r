@@ -25,3 +25,13 @@ dates_every_19_days <- function(start = "2024-12-16",
   # retourne des POSIXct à 19:59:59 dans le TZ demandé
   as.POSIXct(paste(seq_dates, "19:59:59"), tz = tz)
 }
+
+################## EXAMPLES ############################
+# 1) Dates tous les 19 jours depuis 2024-12-16 jusqu'� aujourd'hui
+# dates_every_19_days("2024-12-16")
+
+# 2) M�me chose mais � l'heure de cl�ture 19:59:59 Europe/Paris
+# dates_every_19_days("2024-12-16", at_close = TRUE)
+
+# 3) Fen�tre explicite (par ex. jusqu'au 2025-06-01)
+# dates_every_19_days("2024-12-16", end = "2025-06-01")
