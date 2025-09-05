@@ -6,7 +6,7 @@
 ############################# FETCH TRADES ##################################
 ### return trades for assets for a specific period. A list of data frames ###
 
-get_all_trades <- function(tokens,
+get_all_trades <- function(tokens = token_list,
                            start_date = start_date,
                            mid_date   = mid_date) {
 
