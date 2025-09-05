@@ -3,7 +3,7 @@
 #' @param last_day  Date de fin ("YYYY-MM-DD" ou Date)
 #' @param output    "Date" (par d�faut), "character" (YYYY-MM-DD), ou "string" (une ligne)
 #' @return Un vecteur de Date / de caract�res / ou une seule cha�ne
-dates_every_19_days <- function(first_day, last_day, output = c("Date","character","string")) {
+every_19_days_dates <- function(first_day, last_day, output = c("Date","character","string")) {
   output <- match.arg(output)
   fd <- as.Date(first_day)
   ld <- as.Date(last_day)
@@ -19,11 +19,11 @@ dates_every_19_days <- function(first_day, last_day, output = c("Date","characte
 
 ############ EXEMPLES ############################
 # Vecteur de Date
-# dates_every_19_days ("2024-12-16", Sys.Date())
+# every_19_days_dates ("2024-12-16", Sys.Date())
 
 # Vecteur de cha�nes "YYYY-MM-DD"
-# dates_every_19_days ("2024-12-16", Sys.Date(), output = "character")
+# every_19_days_dates ("2024-12-16", Sys.Date(), output = "character")
 
 # Cha�ne unique format�e comme ton exemple
-# dates_every_19_days ("2024-12-16", Sys.Date(), output = "string")
+# every_19_days_dates("2024-12-16", Sys.Date(), output = "string")
 # "2024-12-16, 2025-01-04, 2025-01-23, 2025-02-11, ..."
