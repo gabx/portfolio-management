@@ -3,10 +3,12 @@
 # write trades 
 # https://enricoschumann.net/notes/
 
-
-
 ############################# FETCH TRADES ##################################
 ### return trades for assets for a specific period. A list of data frames ###
+
+get_all_trades <- function(tokens,
+                           start_date = Sys.getenv("START_DATE"),
+                           mid_date   = Sys.getenv("MID_DATE")) {
 
 ############# PERIOD I ##########################
 binance_credentials(Sys.getenv('BINANCE_KEY'), Sys.getenv('BINANCE_SECRET')) 
@@ -16,15 +18,17 @@ binance_credentials(Sys.getenv('BINANCE_KEY2'), Sys.getenv('BINANCE_SECRET2'))
 trade_ls2 <- mapply(binance_all_orders, start_time = mid_date, symbol = token_list, SIMPLIFY = FALSE)
 
 ############# CLEAN REORDER #######################
+
+############# CLEAN REORDER #######################
 # make one list
 whole_trade <- c(trade_ls1, trade_ls2)
 # remove empty data.frames from the list
 whole_trade_noempty <- Filter(function(df) nrow(df) > 0 && all(dim(df) > 0), whole_trade)
 # keep specific columns. We use dplyr
-trade_list_filter <- lapply(whole_trade_noempty, function(df) df %>% select(any_of(c('symbol', 'order_id',
-        'executed_qty', 'cummulative_quote_qty', 'status', 'side', 'time'))))
+whole_trade_filter <- lapply(whole_trade_noempty, function(df) df %>% select(any_of(c('symbol', 'order_id',
+                                                                                     'executed_qty', 'cummulative_quote_qty', 'status', 'side', 'time'))))
 # make one data.frame with all data.frame from the list
-trade_df<- data.table::rbindlist(trade_list_filter, use.names = TRUE, fill = TRUE)
+trade_df<- data.table::rbindlist(whole_trade_filter, use.names = TRUE, fill = TRUE)
 # replace FTMUSDT by SUSDT
 trade_df <- trade_df %>%
   mutate(symbol = if_else(symbol == "FTMUSDT", "SUSDT", symbol))
@@ -51,16 +55,19 @@ trade_tb <- trade_tb %>%
 ################ JOIN ########################
 
 # add day 1 portfolio
-all_trade <- bind_rows(trade_tb_start, trade_list_tb)
+all_trade <- bind_rows(trade_tb_start, trade_tb)
 
 ################ ALL PAIRS AGAINST USDC ################
 
 # date for rows with pair token/BTC
-btc_time_ls <- all_trade %>%
-  filter(str_detect(symbol, "BTC$")) %>%
-  pull(time) 
+btc_dates <- all_trade %>%
+  filter(str_detect(symbol, "BTC")) %>%      # contient "BTC" n'importe o�
+  distinct(time) %>%                         # optionnel: �viter les doublons
+  arrange(time) %>%                          # optionnel: trier
+  pull(time)
+
 # as tibble
-btc_time_tb <- as_tibble(btc_time_ls)
+btc_dates_tb <- as_tibble(btc_dates)
 
 # function to retrieve BTC price @ specific time.
 # round_date round to the nearest unit
@@ -69,7 +76,7 @@ get_btc_price <- function(my_time) {
                           (as.POSIXct(my_time, tz = 'UTC') - 3600, unit = 'minute'), end_time = as.POSIXct(my_time, tz = 'UTC') + 60)
 }  
 # apply the function to our dates
-btc_with_price <- btc_time_tb %>%
+btc_with_price <- btc_dates_tb %>%
   mutate(kline = map(value, get_btc_price))
 # unnest to get the full table
 btc_with_price <- btc_with_price %>%
@@ -84,17 +91,17 @@ btc_value <- btc_with_price %>%
 
 
 # we add BTC price for lines with paires against BTC
-# Extraire les lignes concern�es par les symboles en BTC
+# Extraire les lignes concern\ufffdes par les symboles en BTC
 btc_trade_rows <- which(str_detect(all_trade$symbol, "BTC$"))
-# Créer un vecteur de la même taille que all_trade avec que des NA
+# Cr�er un vecteur de la m�me taille que all_trade avec que des NA
 btc_ref_price_col <- rep(NA_real_, nrow(all_trade))
 # Injecter les prix dans les lignes correspondant aux symboles BTC
 btc_ref_price_col[btc_trade_rows] <- btc_value$btc_price[seq_along(btc_trade_rows)]
-# Ajouter la colonne à la tibble
+# Ajouter la colonne � la tibble
 all_trade <- all_trade %>%
   mutate(btc_price = btc_ref_price_col)
 #all_trade <- all_trade %>%
-  #select(-btc_reference_price)
+#select(-btc_reference_price)
 # replace btc price by USDT
 all_trade_no_btc <- all_trade %>%
   mutate(
@@ -114,13 +121,9 @@ all_trade_final <- all_trade_no_btc %>%
   select(-status, -side, -btc_price, -order_id)
 
 # clean environment
-rm('btc_ref_price_col', 'btc_with_price', 'btc_time_tb', 'btc_time_ls', 'trade_list_unique',
-   'all_trade_no_btc', 'btc_trade_rows', 'trade_list_final',
-  'trade_list_tb', 'all_trade', 'btc_value', 'token', 'token_list',
-   'trade_ls2', 'trade_list', 'trade_list_filter', 'trade_ls1', 'trade_df', 'trade_df_unique',
-  'whole_trade')
-
-
-
-
-
+rm('btc_ref_price_col', 'btc_with_price', 
+   'all_trade_no_btc', 'btc_trade_rows', 
+   'all_trade', 'btc_value', 'token_list',
+   'trade_ls2', 'trade_ls1', 'trade_df', 'trade_df_unique',
+   'whole_trade', 'whole_trade_noempty')
+}
