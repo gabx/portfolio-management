@@ -19,8 +19,8 @@ source('load_assets.r')
 # fetch all trades from day 1, Sys.getenv("START_DATE")
 source('get_all_trades.r')
 
-
-
+# source la fonction qui va donner la date tous les 19 jours depuis day 1
+source('date_19_jours.r')
 
 # get the PL by token
 source('get_pl.r')
